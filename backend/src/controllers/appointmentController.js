@@ -83,6 +83,7 @@ export const createAppointment = async (req, res) => {
 
 export const updateAppointment = async (req, res) => {
   try {
+    console.log('updateAppointment:hit');
     const appointment = await Appointment.findById(req.params.id);
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found' });
@@ -98,8 +99,8 @@ export const updateAppointment = async (req, res) => {
       appointment[key] = updates[key];
     });
 
-    await appointment.save();
-
+    const updatedAppointment = await appointment.save();
+    console.log('updatedAppointment:', updatedAppointment);
     const populatedAppointment = await appointment.populate([
       { path: 'doctorId', select: 'name specialization' },
       { path: 'patientId', select: 'name' }

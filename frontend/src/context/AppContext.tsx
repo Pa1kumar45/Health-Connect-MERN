@@ -49,10 +49,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
           setIsLoading(true);
           setError(null);
-          // const userData = await apiService.getCurrentUser();
-          // setCurrentUser(userData);
+          const userData = await apiService.getCurrentUser();
+          setCurrentUser(userData);
           // Always update localStorage with the latest complete data
-          // localStorage.setItem('user', JSON.stringify(userData));
+          localStorage.setItem('user', JSON.stringify(userData));
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Failed to load user data');
           console.error('Failed to load user data:', err);

@@ -5,10 +5,12 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { Appointment } from '../types';
 import { appointmentService } from '../services/appointment.service';
 import { useApp } from '../context/AppContext';
+import { apiService } from '../services/api.service';
+// import { useNavigate } from 'react-router-dom';
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
-  const { currentUser } = useApp();
+  const [currentUser, setcurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingAppointments, setPendingAppointments] = useState<Appointment[]>([]);
@@ -17,16 +19,22 @@ const DoctorDashboard = () => {
 
   useEffect(() => {
     fetchAppointments();
+  
   }, []);
 
   const fetchAppointments = async () => {
     try {
       setIsLoading(true);
+      
+      const res = await apiService.getCurrentUser();
+      setcurrentUser(res.data.user);
+      
     //   console.log("all appointments",appointments);
       const appointments = await appointmentService.getDoctorAppointments();
-       console.log(currentUser)
+      console.log("pending",appointments);
       setPendingAppointments(appointments.filter(app => app.status === 'pending'));
-      setUpcomingAppointments(appointments.filter(app => app.status === 'scheduled' && new Date(app.date) >= new Date() && new Date(app.startTime) > new Date()));
+      // setUpcomingAppointments(appointments.filter(app => app.status === 'scheduled' && new Date(app.date) >= new Date() && new Date(app.startTime) > new Date()));
+      setUpcomingAppointments(appointments.filter(app => app.status === 'scheduled' ));
       setActiveAppointments(appointments.filter(app => new Date(app.startTime) < new Date() && new Date(app.endTime) > new Date()));
     } catch (err) {
       setError('Failed to fetch appointments');
@@ -35,29 +43,39 @@ const DoctorDashboard = () => {
     }
   };
 
-  const handleAcceptAppointment = async (appointmentId: string) => {
+  const handleUpdateAppointment = async (appointment: Appointment, status: string) => {
     try {
-      await appointmentService.updateAppointmentStatus(appointmentId, 'scheduled');
+      
+    console.log("appointment",appointment);
+    appointment.status = status;
+    console.log("finalappointment",appointment);
+
+      const updatedAppointment = await appointmentService.updateAppointment(appointment._id!,appointment);
+      console.log("updated appointment",updatedAppointment);
       fetchAppointments();
-    } catch (err) {
-      setError('Failed to accept appointment');
     }
+    catch (err) {
+      setError('Failed to update appointment');
+    }
+
+
   };
 
-  const handleRejectAppointment = async (appointmentId: string) => {
-    try {
-      await appointmentService.updateAppointmentStatus(appointmentId, 'cancelled');
-      fetchAppointments();
-    } catch (err) {
-      setError('Failed to reject appointment');
-    }
+
+  const handlechangeComment =  (ID:string ,e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    console.log("comment",e.target.value);
+    setPendingAppointments(pendingAppointments=>pendingAppointments.map(
+      (appointment)=>appointment._id===ID
+      ?{...appointment,comment:e.target.value}
+      :appointment));
   };
+ 
 
   if (isLoading) return <LoadingSpinner />;
 
   if (!currentUser) {
-    navigate('/login');
-    return null;
+    // navigate('/login');
+    // return null;
   }
 
   return (
@@ -70,7 +88,7 @@ const DoctorDashboard = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4">Pending Appointments</h2>
           {pendingAppointments.map(appointment => (
-            <div key={appointment.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4">
+            <div id={appointment._id} key={appointment._id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4">
               <p>Patient: {appointment.patientId.name}</p>
               <p>Date: {new Date(appointment.date).toLocaleString()}</p>
               <p>Time: {appointment.startTime} - {appointment.endTime}</p>
@@ -80,18 +98,22 @@ const DoctorDashboard = () => {
                 <textarea
                 className="w-full p-2 mt-2 border rounded"
                 placeholder="Write a comment..."
+                value={appointment.comment||""}
+                onChange={(e) => {handlechangeComment(appointment._id, e)}}
                 rows={3}
                 ></textarea>
 
               <div className="mt-2">
                 <button
-                  onClick={() => handleAcceptAppointment(appointment.id)}
+                  onClick={
+                    () => handleUpdateAppointment(appointment,'scheduled')
+                  }
                   className="bg-green-500 text-white px-3 py-1 rounded mr-2"
                 >
                   <Check size={16} />
                 </button>
                 <button
-                  onClick={() => handleRejectAppointment(appointment.id)}
+                  onClick={() => handleUpdateAppointment(appointment,'cancelled')}
                   className="bg-red-500 text-white px-3 py-1 rounded"
                 >
                   <X size={16} />
@@ -110,7 +132,7 @@ const DoctorDashboard = () => {
             </div>
           ):(
           upcomingAppointments.map(appointment => (
-            <div key={appointment.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4">
+            <div key={appointment._id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4">
               <p>Patient: {appointment.patientId.name}</p>
               <p>Date: {new Date(appointment.dateTime).toLocaleString()}</p>
               <p>Mode: {appointment.mode}</p>
@@ -128,7 +150,7 @@ const DoctorDashboard = () => {
           </div>
         ):(
         activeAppointments.map(appointment => (
-          <div key={appointment.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4 flex justify-between items-center">
+          <div key={appointment._id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4 flex justify-between items-center">
             <div>
               <p>Patient: {appointment.patientId.name}</p>
               <p>Date: {new Date(appointment.dateTime).toLocaleString()}</p>
