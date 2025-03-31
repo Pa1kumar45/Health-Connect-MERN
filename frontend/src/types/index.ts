@@ -16,6 +16,16 @@ export interface Patient{
   // profileCompleted:boolean;
 }
 
+export interface SignUpFormData {
+  name: string;
+  email: string;
+  password: string;
+  role: 'doctor' | 'patient';
+  specialization?: string;
+  qualification?: string;
+  experience?: number;
+}
+
 export interface EmergencyContact{
   name:string;
   relationship:string;

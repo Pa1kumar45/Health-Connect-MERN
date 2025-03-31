@@ -15,15 +15,10 @@ const verifyToken = async (token) => {
       throw new Error('Token has expired');
     }
 
-    const user = await (decoded.role === 'doctor' 
-      ? Doctor.findById(decoded.id).select('-password')
-      : Patient.findById(decoded.id).select('-password'));
+    const id = decoded.id;
+    
 
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    return { user, role: decoded.role };
+    return { userId:id, role: decoded.role };
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
       throw new Error('Invalid token');
@@ -34,34 +29,22 @@ const verifyToken = async (token) => {
 
 export const protect = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.cookies.token;
+    if(!token){
+      res.status(401).json({success:false,message:'missing token'})
+    }
     const { user, role } = await verifyToken(token);
-    console.log("token verified", user )
+    
+    if(!user||!role){
+      res.status(401).json({success:false,message:" Invalid"})
+    }
+
     req.token = token;
     req.user = user;
     req.userRole = role;
     next();
   } catch (error) {
-    let statusCode = 401;
-    let message = 'Please authenticate';
-
-    switch (error.message) {
-      case 'No token provided':
-        message = 'Authentication token is required';
-        break;
-      case 'Invalid token':
-        message = 'Invalid authentication token';
-        break;
-      case 'Token has expired':
-        message = 'Authentication token has expired';
-        break;
-      case 'User not found':
-        statusCode = 404;
-        message = 'User account not found';
-        break;
-    }
-
-    res.status(statusCode).json({ message });
+    res.status(400).json({ success:false,message:error });
   }
 };
 

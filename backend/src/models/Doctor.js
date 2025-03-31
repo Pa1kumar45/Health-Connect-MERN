@@ -52,14 +52,17 @@ const doctorSchema = new mongoose.Schema({
 // Hash password before saving
 doctorSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 12);
+  const salt = await bcrypt.genSalt(14);
+  this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
 // Method to check password
+// return true or false
 doctorSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
+// the name should be expected like Doctor first capital and singular
 export const Doctor = mongoose.model('Doctor', doctorSchema);
 export default Doctor; 

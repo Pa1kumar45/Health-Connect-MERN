@@ -9,7 +9,7 @@ export const getDoctors = async (req, res) => {
       .select('name email specialization experience qualification about contactNumber avatar schedule');
     res.json(doctors);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching doctors' });
+    res.status(500).json({success:false, message: 'Error fetching doctors' });
   }
 };
 
@@ -23,48 +23,26 @@ export const getDoctor = async (req, res) => {
       .select('name email specialization experience qualification about contactNumber avatar schedule');
     // console.log("got the doctor details",doctor)
     if (!doctor) {
-      return res.status(404).json({ message: 'Doctor not found' });
+      return res.status(404).json({success:false, message: 'Doctor not found' });
     }
     res.json(doctor);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching doctor' });
+    res.status(500).json({success:false, message: 'Error fetching doctor' });
   }
 };
 
 // Update doctor profile
 export const updateDoctor = async (req, res) => {
   try {
-    // const errors = validationResult(req);
-    // if (!errors.isEmpty()) {
-    //   return res.status(400).json({ errors: errors.array() });
-    // }
 
     const id= req.user._id;
     const doctor = await Doctor.findById(id);
     if (!doctor) {
-      return res.status(404).json({ message: 'Doctor not found' });
+      return res.status(404).json({success:false, message: 'Doctor not found' });
     }
 
-    // Only allow doctors to update their own profile
-    // if (doctor._id.toString() !== req.user._id.toString()) {
-    //   return res.status(403).json({ message: 'Not authorized to update this profile' });
-    // }
-
-    // const allowedUpdates = [
-    //   'name',
-    //   'specialization',
-    //   'experience',
-    //   'availability',
-    //   'contactNumber',
-    //   'profileImage'
-    // ];
 
     const updates = req.body;
-    // Object.keys(updates).forEach(key => {
-    //   if (allowedUpdates.includes(key)) {
-    //     doctor[key] = updates[key];
-    //   }
-    // });
 
     Object.keys(updates).forEach(key=>{
       doctor[key] = updates[key];
@@ -73,7 +51,7 @@ export const updateDoctor = async (req, res) => {
     await doctor.save();
     res.json(doctor);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating doctor profile' });
+    res.status(500).json({success:false, message: 'Error updating doctor profile' });
   }
 };
 
@@ -82,32 +60,28 @@ export const deleteDoctor = async (req, res) => {
   try {
     const doctor = await Doctor.findById(req.params.id);
     if (!doctor) {
-      return res.status(404).json({ message: 'Doctor not found' });
+      return res.status(404).json({success:false, message: 'Doctor not found' });
     }
 
     // Only allow doctors to delete their own profile
     if (doctor._id.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to delete this profile' });
+      return res.status(403).json({success:false, message: 'Not authorized to delete this profile' });
     }
 
     await doctor.deleteOne();
     res.json({ message: 'Doctor profile deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting doctor profile' });
+    res.status(500).json({success:false, message: 'Error deleting doctor profile' });
   }
 };
 
 // Update doctor's own profile
 export const updateDoctorProfile = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
 
-    const doctor = await Doctor.findById(req.user._id);
+    const doctor = await Doctor.findById(req.userId);
     if (!doctor) {
-      return res.status(404).json({ message: 'Doctor not found' });
+      return res.status(404).json({success:false, message: 'Doctor not found' });
     }
 
     const allowedUpdates = [
@@ -127,9 +101,9 @@ export const updateDoctorProfile = async (req, res) => {
     });
 
     await doctor.save();
-    res.json(doctor);
+    res.status(200).json({success:true,doctor});
   } catch (error) {
-    res.status(500).json({ message: 'Error updating profile' });
+    res.status(500).json({ success:false,message: 'Error updating profile' });
   }
 };
 
@@ -138,14 +112,14 @@ export const addReview = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({success:false, errors: errors.array() });
     }
 
     const { rating, comment } = req.body;
     const doctor = await Doctor.findById(req.params.id);
 
     if (!doctor) {
-      return res.status(404).json({ message: 'Doctor not found' });
+      return res.status(404).json({success:false, message: 'Doctor not found' });
     }
 
     // Check if patient has already reviewed this doctor
@@ -171,8 +145,8 @@ export const addReview = async (req, res) => {
     doctor.rating = totalRating / doctor.reviews.length;
 
     await doctor.save();
-    res.status(201).json(doctor);
+    res.status(201).json({success:true,doctor});
   } catch (error) {
-    res.status(500).json({ message: 'Error adding review' });
+    res.status(500).json({success:false, message: 'Error adding review' });
   }
 };

@@ -160,7 +160,7 @@ export const getDoctorAppointments = async (req, res) => {
 };
   export const getPatientAppointments =async(req,res)=>{
     try {
-      console.log('getPatientAppointments');
+      console.log('getPatientAppointments hit');
       const userId = req.user._id;
       
       // Check if the patient exists
@@ -168,10 +168,10 @@ export const getDoctorAppointments = async (req, res) => {
         console.log('Only patients can get appointments');
         return res.status(403).json({ message: 'Only patients can create appointments' });
       }
-      const appointments = await Appointment.find({ patientId })
+      const appointments = await Appointment.find({ patientId: userId })
         .populate('doctorId', 'name specialization')
         .sort({ date: 1,startTime:1 });
-      console.log("appointments",appointments);
+      console.log("got patient appointments",appointments);
       res.json(appointments); 
     }
     catch (error) {

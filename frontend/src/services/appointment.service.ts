@@ -38,6 +38,22 @@ export const appointmentService = {
     return response.json();
   },
 
+  async getPatientAppointments(): Promise<Appointment[]> {
+    const response = await fetch(`${API_URL}/appointments/patient/`, {
+      headers: {
+        ...getAuthHeader()
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch patient appointments');
+    }
+
+    return response.json();
+  },
+
+
   async updateAppointment(appointmentId: string, appointmentData: Partial<Appointment>): Promise<Appointment> {
      const response = await fetch(`${API_URL}/appointments/${appointmentId}`, {
       method: 'PUT',

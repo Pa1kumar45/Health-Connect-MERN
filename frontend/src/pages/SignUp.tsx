@@ -4,16 +4,8 @@ import { authService } from '../services/auth.service';
 import { apiService } from '../services/api.service';
 import { useApp } from '../context/AppContext';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { SignUpFormData } from '../types';
 
-interface SignUpFormData {
-  name: string;
-  email: string;
-  password: string;
-  role: 'doctor' | 'patient';
-  specialization?: string;
-  qualification?: string;
-  experience?: number;
-}
 
 const SignUp = () => {
   const navigate = useNavigate();

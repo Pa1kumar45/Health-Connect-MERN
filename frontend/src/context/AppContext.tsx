@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { Doctor, Patient } from '../types';
-// import { apiService } from '../services/api.service';
+import { apiService } from '../services/api.service';
 
 interface ThemeContextType {
   isDarkMode: boolean;
@@ -50,7 +50,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setIsLoading(true);
           setError(null);
           const userData = await apiService.getCurrentUser();
-          setCurrentUser(userData);
+          setCurrentUser(userData.data.user);
           // Always update localStorage with the latest complete data
           localStorage.setItem('user', JSON.stringify(userData));
         } catch (err) {

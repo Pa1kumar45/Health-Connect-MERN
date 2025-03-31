@@ -1,22 +1,7 @@
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-// import { validationResult } from 'express-validator';
-import {Doctor} from '../models/Doctor.js'
-import {Patient} from '../models/Patient.js'
-// import { Doctor } from '../../models/Doctor.js';
-// import { Patient } from '../../models/Patient.js';
+import { Doctor } from '../models/Doctor.js'
+import { Patient } from '../models/Patient.js'
+import { generateToken } from '../lib/utils.js';
 
-const generateToken = (userId, role) => {
-  try {
-    return jwt.sign(
-      { id: userId, role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-  } catch (error) {
-    throw new Error('Failed to generate authentication token');
-  }
-};
 
 const formatUserResponse = (user, role) => ({
   name: user.name,
@@ -45,110 +30,83 @@ const formatUserResponse = (user, role) => ({
 // Register user
 export const register = async (req, res) => {
   try {
-    // const errors = validationResult(req);
-    // if (!errors.isEmpty()) {
-    //   return res.status(400).json({ 
-    //     success: false,
-    //     message: 'Validation error', 
-    //     errors: errors.array() 
-    //   });
-    // }
 
+    // every thing should be sent from frontend and it is expected as no check here
     const { name, email, password, role, ...additionalData } = req.body;
     console.log('req.body');
-    // console.log(req.body);
 
-    // Check if user already exists
-    const existingDoctor = await Doctor.findOne({ email });
-    const existingPatient = await Patient.findOne({ email });
-    
-    if (existingDoctor || existingPatient) {
-      return res.status(400).json({ 
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({
         success: false,
-        message: 'User already exists with this email' 
+        message: 'all fields are requried'
       });
     }
 
     // Validate required fields based on role
     if (role === 'doctor') {
-      if (!additionalData.specialization) {
-        return res.status(400).json({ 
+      if (!additionalData.specialization || !additionalData.qualification || typeof additionalData.experience !== 'number') {
+        return res.status(400).json({
           success: false,
-          message: 'Specialization is required for doctors' 
+          message: 'Missing some of the Additional filelds for Doctor '
         });
       }
-      if (!additionalData.qualification) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Qualification is required for doctors' 
-        });
-      }
-      if (typeof additionalData.experience !== 'number') {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Experience must be a number' 
-        });
-      }
+
     }
+
+
+    // Check if user already exists
+    const existingDoctor = await Doctor.findOne({ email });
+    const existingPatient = await Patient.findOne({ email });
+
+    if (existingDoctor || existingPatient) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
+      });
+    }
+
+    // ensure data is validated in frontend
 
     // Create new user based on role
     let user;
-    try {
-      const UserModel = role === 'doctor' ? Doctor : Patient;
-      user = new UserModel({
-        name,
-        email,
-        password,
-        ...additionalData
-      });
+    const UserModel = role === 'doctor' ? Doctor : Patient;
+    user = new UserModel({
+      name,
+      email,
+      password,
+      ...additionalData
+    });
 
-      await user.save();
-    } catch (saveError) {
-      console.error('Error saving user:', saveError);
-      return res.status(500).json({ 
-        success: false,
-        message: 'Error creating user account',
-        error: saveError.message 
-      });
-    }
+    await user.save();
 
     // Generate JWT token
     console.log('createed user')
     console.log(user._id)
-    const token = generateToken(user._id, role);
+    generateToken(user._id, role, res);
     // console.log(`token genereated ${token}`)
-     
+
     res.status(201).json({
       success: true,
       message: 'Registration successful',
       data: {
-        token,
         user: formatUserResponse(user, role)
       }
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ 
+    console.error('register endpoint', error);
+    res.status(500).json({
       success: false,
       message: 'Error in registration process',
-      error: error.message 
+      error: error.message
     });
   }
 };
 
 // Login user
 export const login = async (req, res) => {
-  // console.log('login hit');
+
   try {
     // console.log('login hit');
-    // const errors = validationResult(req);
-    // if (!errors.isEmpty()) {
-    //   return res.status(400).json({ 
-    //     success: false,
-    //     message: 'Validation error',
-    //     errors: errors.array() 
-    //   });
-    // }
 
     const { email, password, role } = req.body;
 
@@ -157,38 +115,37 @@ export const login = async (req, res) => {
     const user = await UserModel.findOne({ email });
     // console.log('user', user);
     if (!user) {
-      return res.status(401).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Invalid email or password 1' 
+        message: 'Invalid creds'
       });
     }
 
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Invalid email or password 2' 
+        message: 'Invalid credentials'
       });
     }
 
     // Generate JWT token
-    const token = generateToken(user._id, role);
+    generateToken(user._id, role,res);
 
     res.json({
       success: true,
       message: 'Login successful',
       data: {
-        token,
         user: formatUserResponse(user, role)
       }
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       message: 'Error in login process',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -197,12 +154,21 @@ export const login = async (req, res) => {
 export const getCurrentUser = async (req, res) => {
   try {
     console.log("hit get current User");
-    const user = req.user;
-    
+    const id = req.userId;
+    const role=req.userRole;
+    let user;
+    if(role="doctor"){
+     user = await Patient.findById(id);
+    }
+    else{
+     user = await Doctor.findById(id);
+  
+    }
+
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'User not found' 
+        message: 'User not found'
       });
     }
     // console.log("get current user sent",formatUserResponse(user,req.userRole));
@@ -214,10 +180,23 @@ export const getCurrentUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Get current user error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       message: 'Error fetching user data',
-      error: error.message 
+      error: error.message
     });
   }
 };
+
+
+export const logout = async (req,res)=>{
+  try {
+
+    res.cookie("token","",{maxAge:0});
+
+    res.status(200).json({success:true,message:'logged out succesfully'})
+    
+  } catch (err) {
+    console.log("error in logout",err);
+  }
+}

@@ -16,16 +16,6 @@ const router = express.Router();
 router.get('/', getDoctors);
 router.get('/:id', getDoctor);
 
-// Protected doctor routes
-// router.put('/:id', protect, doctorOnly, [
-//   body('name').optional().trim().notEmpty(),
-//   body('specialization').optional().trim().notEmpty(),
-//   body('experience').optional().isNumeric(),
-//   body('availability').optional().isArray(),
-//   body('contactNumber').optional().trim().notEmpty(),
-//   body('profileImage').optional().trim().isURL()
-// ], updateDoctor);
-
 router.put('/:id', protect, doctorOnly, updateDoctor);
 router.delete('/:id', protect, doctorOnly, deleteDoctor);
 router.put('/profile', protect, doctorOnly, updateDoctorProfile);

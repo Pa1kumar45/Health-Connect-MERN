@@ -11,6 +11,7 @@ import Navbar from './components/Navbar';
 import DoctorList from './pages/DoctorList';
 import DoctorPage from './pages/DoctorPage';
 import DoctorDashboard from './pages/DoctorDashboard';
+import PatientAppointments from './pages/PatientAppointments';
 const App: React.FC = () => {
   return (
     <AppProvider>
@@ -47,14 +48,7 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/appointments"
-          element={
-            <ProtectedRoute allowedRoles={['patient']}>
-              <PatientAppointments />
-            </ProtectedRoute>
-          }
-        />
+       
         <Route
           path="/doctor/schedule"
           element={
@@ -88,6 +82,15 @@ const App: React.FC = () => {
           }
         />
         */}
+
+          <Route
+          path="/user/appointments"
+          element={
+            // <ProtectedRoute allowedRoles={['patient']}>
+              <PatientAppointments />
+            // </ProtectedRoute>
+          }
+        />
         <Route
           path="/doctor/:id"
           element={
@@ -97,7 +100,7 @@ const App: React.FC = () => {
           }
         />
         <Route
-          path="/appointments/"
+          path="/doctor/appointments/"
           element={
             
               <DoctorDashboard />
@@ -108,9 +111,9 @@ const App: React.FC = () => {
         <Route
           path="/userProfile"
           element={
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <PatientProfile />
-            </ProtectedRoute>
+            // </ProtectedRoute>
           }
         />
         <Route

@@ -7,6 +7,7 @@ import {
   updateAppointment,
   deleteAppointment,
   getDoctorAppointments,
+  getPatientAppointments
   // updateAppointmentStatus
 } from '../controllers/appointmentController.js';
 import { protect } from '../middleware/auth.js';
@@ -18,6 +19,7 @@ router.use(protect);
 
 router.get('/', getAppointments);
 router.get('/doctor/', getDoctorAppointments);
+router.get('/patient/', getPatientAppointments);
 router.get('/:id', getAppointment);
 
 router.post('/', createAppointment);
