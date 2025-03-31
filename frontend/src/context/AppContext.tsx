@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { Doctor, Patient } from '../types';
 import { apiService } from '../services/api.service';
+import axios, { AxiosInstance } from 'axios';
+import { axiosInstance } from '../utils/axios';
 
 interface ThemeContextType {
   isDarkMode: boolean;
@@ -22,10 +24,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return savedTheme ? JSON.parse(savedTheme) : false;
   });
 
-  // const [currentUser, setCurrentUser] = useState<Doctor | Patient | null>(() => {
-  //   const savedUser = localStorage.getItem('user');
-  //   return savedUser ? JSON.parse(savedUser) : null;
-  // });
   const [currentUser, setCurrentUser] = useState<Doctor | Patient | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -41,41 +39,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
   }, [isDarkMode]);
 
-  // Load user data if token exists
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const loadUser = async () => {
-        try {
-          setIsLoading(true);
-          setError(null);
-          const userData = await apiService.getCurrentUser();
-          setCurrentUser(userData.data.user);
-          // Always update localStorage with the latest complete data
-          localStorage.setItem('user', JSON.stringify(userData));
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'Failed to load user data');
-          console.error('Failed to load user data:', err);
-          // Clear invalid token and user data
-          localStorage.removeItem('token');
-          // localStorage.removeItem('user');
-          setCurrentUser(null);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      loadUser();
-    }
-  }, []); // Remove currentUser dependency to prevent infinite loop
 
-  // Update localStorage when user changes
-  // useEffect(() => {
-  //   if (currentUser) {
-  //     localStorage.setItem('user', JSON.stringify(currentUser));
-  //   } else {
-  //     localStorage.removeItem('user');
-  //   }
-  // }, [currentUser]);
+
+
+
+  
 
   const toggleDarkMode = useCallback(() => {
     setIsDarkMode((prev: boolean) => !prev);
@@ -89,7 +57,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentUser,
         setCurrentUser,
         isLoading,
-        error
+        error,
       }}
     >
       {children}

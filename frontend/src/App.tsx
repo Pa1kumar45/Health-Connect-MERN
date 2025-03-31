@@ -1,6 +1,6 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AppProvider } from './context/AppContext';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route,Navigate } from 'react-router-dom';
+import { useApp } from './context/AppContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import SignUp from './pages/SignUp';
 // import UserProfile from './pages/UserProfile';
@@ -12,139 +12,69 @@ import DoctorList from './pages/DoctorList';
 import DoctorPage from './pages/DoctorPage';
 import DoctorDashboard from './pages/DoctorDashboard';
 import PatientAppointments from './pages/PatientAppointments';
+import { getCurrentUser } from './services/api.service';
 const App: React.FC = () => {
-  return (
-    <AppProvider>
-    <Router>
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<DoctorList />} />
-        
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-         {/*
-        <Route
-          path="/doctor/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['doctor']}>
-              <DoctorDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/patient/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['patient']}>
-              <PatientDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/doctor/appointments"
-          element={
-            <ProtectedRoute allowedRoles={['doctor']}>
-              <DoctorAppointments />
-            </ProtectedRoute>
-          }
-        />
-       
-        <Route
-          path="/doctor/schedule"
-          element={
-            <ProtectedRoute allowedRoles={['doctor']}>
-              <DoctorSchedule />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/doctor/history"
-          element={
-            <ProtectedRoute allowedRoles={['doctor']}>
-              <DoctorHistory />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/history"
-          element={
-            <ProtectedRoute allowedRoles={['patient']}>
-              <PatientHistory />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/doctors"
-          element={
-            <ProtectedRoute allowedRoles={['patient']}>
-              <DoctorList />
-            </ProtectedRoute>
-          }
-        />
-        */}
+  const { currentUser ,setCurrentUser} = useApp();
+  useEffect(() => {
+    const response =getCurrentUser();
+    if(response.success){
+      setCurrentUser(response.data);
+    }
+  }, [])
+  
 
-          <Route
-          path="/user/appointments"
-          element={
-            // <ProtectedRoute allowedRoles={['patient']}>
-              <PatientAppointments />
-            // </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/doctor/:id"
-          element={
-            <ProtectedRoute allowedRoles={['patient']}>
-              <DoctorPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/doctor/appointments/"
-          element={
-            
-              <DoctorDashboard />
-            
-          }
-        />
-        
-        <Route
-          path="/userProfile"
-          element={
-            // <ProtectedRoute>
-              <PatientProfile />
-            // </ProtectedRoute>
-          }
-        />
-        <Route
+  return (
+
+    <Router>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<DoctorList />} />
+
+          <Route path="/signup" element={!currentUser ? <SignUp /> :<Navigate to="/" />} />
+          <Route path="/login" element={!currentUser ? <Login /> : <Navigate to="/" />} />
+          if(currentUser){
+            <>
+              <Route
+                path="/appointments"
+                element={
+                  currentUser?.role == 'patient' ? <PatientAppointments /> :
+                    <DoctorDashboard />
+                }
+              />
+              <Route
           path="/doctorProfile"
           element={
-            <ProtectedRoute>
-              <DoctorProfile />
-            </ProtectedRoute>
+           currentUser?.role=='doctor'?
+              <DoctorProfile />:
+              <PatientProfile/>
+            
           }
         />
-        {/*
-        <Route
-          path="/chat"
-          element={
-            <ProtectedRoute>
-              <Chat />
-            </ProtectedRoute>
+            </>
+
           }
-        />
-        <Route
-          path="/video-call/:roomId"
-          element={
-            <ProtectedRoute>
-              <VideoCall />
-            </ProtectedRoute>
-          }
-        /> */}
-      </Routes>
-    </div>
-  </Router>
-  </AppProvider>
+         
+
+
+
+
+          <Route
+            path="/doctor/:id"
+            element={
+              <ProtectedRoute allowedRoles={['patient']}>
+                <DoctorPage />
+              </ProtectedRoute>
+            }
+          />
+
+
+
+
+        </Routes>
+      </div>
+    </Router>
+
   );
 };
 

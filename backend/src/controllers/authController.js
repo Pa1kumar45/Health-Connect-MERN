@@ -84,12 +84,11 @@ export const register = async (req, res) => {
     console.log(user._id)
     generateToken(user._id, role, res);
     // console.log(`token genereated ${token}`)
-
     res.status(201).json({
       success: true,
       message: 'Registration successful',
       data: {
-        user: formatUserResponse(user, role)
+        user
       }
     });
   } catch (error) {
@@ -121,6 +120,8 @@ export const login = async (req, res) => {
       });
     }
 
+
+
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
@@ -133,11 +134,13 @@ export const login = async (req, res) => {
     // Generate JWT token
     generateToken(user._id, role,res);
 
+
+
     res.json({
       success: true,
       message: 'Login successful',
       data: {
-        user: formatUserResponse(user, role)
+        user:user
       }
     });
   } catch (error) {
@@ -171,12 +174,12 @@ export const getCurrentUser = async (req, res) => {
         message: 'User not found'
       });
     }
+
     // console.log("get current user sent",formatUserResponse(user,req.userRole));
     res.json({
       success: true,
-      data: {
-        user: formatUserResponse(user, req.userRole)
-      }
+      data: user
+      
     });
   } catch (error) {
     console.error('Get current user error:', error);

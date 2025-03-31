@@ -13,6 +13,8 @@ export interface Patient{
   role: 'patient';
   avatar?: string;
   createdAt: string;
+  updatedAt: string;
+  __v:number
   // profileCompleted:boolean;
 }
 
@@ -46,6 +48,8 @@ export interface Doctor{
   schedule: Schedule[];
   role: 'doctor';
   createdAt: string;
+  updatedAt: string;
+  __v:number
 }
 
 export interface MedicalHistory {

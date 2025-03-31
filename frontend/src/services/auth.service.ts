@@ -1,7 +1,9 @@
+// import { useApp } from '../context/AppContext';
 import { LoginCredentials, AuthResponse } from '../types';
 
 const API_URL = 'http://localhost:5000/api';
 
+// const {currentUser,setCurrentUser}=useApp();
 export const authService = {
   async register(data: LoginCredentials & { name: string; role: string }): Promise<AuthResponse> {
     console.log("register data")

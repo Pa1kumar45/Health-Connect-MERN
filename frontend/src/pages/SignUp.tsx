@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
-import { apiService } from '../services/api.service';
+import { apiService, getCurrentUser } from '../services/api.service';
 import { useApp } from '../context/AppContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { SignUpFormData } from '../types';
@@ -24,9 +24,7 @@ const SignUp = () => {
 
 //   // Clear any existing auth data on component mount
   useEffect(() => {
-    authService.logout();
-    setCurrentUser(null);
-  }, [setCurrentUser]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,31 +43,9 @@ const SignUp = () => {
         : formData;
 
       // First, register the user
-      const response = await authService.register(registrationData);
+      const response=await authService.register(registrationData);
+      setCurrentUser(response.data);
 
-      
-      
-      // Store the JWT token
-      localStorage.setItem('token', response.data.token);
-
-      console.log("response token", response.data.token)
-
-      setCurrentUser(response.data.user)
-
-      console.log("user details",response.data.user);
-      
-      // Fetch complete user profile using the token
-      const userData = await apiService.getCurrentUser();
-      
-      // Update context with complete user data
-      setCurrentUser((userData.data.user));
-      
-      // Store user data in localStorage
-    //   localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Navigate to appropriate dashboard
-      console.log("user data before navigate",currentUser)
-      navigate(userData.role === 'doctor' ? '/doctorProfile' : '/userProfile');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
       console.error('Registration error:', err);

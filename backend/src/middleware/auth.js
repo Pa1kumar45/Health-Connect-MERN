@@ -31,12 +31,12 @@ export const protect = async (req, res, next) => {
   try {
     const token = req.cookies.token;
     if(!token){
-      res.status(401).json({success:false,message:'missing token'})
+     return res.status(401).json({success:false,message:'missing token'})
     }
     const { user, role } = await verifyToken(token);
     
     if(!user||!role){
-      res.status(401).json({success:false,message:" Invalid"})
+     return  res.status(401).json({success:false,message:" Invalid"})
     }
 
     req.token = token;
@@ -44,7 +44,7 @@ export const protect = async (req, res, next) => {
     req.userRole = role;
     next();
   } catch (error) {
-    res.status(400).json({ success:false,message:error });
+    return res.status(400).json({ success:false,message:error });
   }
 };
 
