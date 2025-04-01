@@ -6,11 +6,12 @@ import { doctorService } from '../services/doctor.service';
 import { appointmentService } from '../services/appointment.service';
 import { Doctor, Appointment, Slot, Patient } from '../types';
 import { apiService } from '../services/api.service';
+import { useApp } from '../context/AppContext';
 
 const DoctorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [doctor, setDoctor] = useState<Doctor | null>(null);
-  const [currentUser, setCurrentUser] = useState<Doctor |Patient| null>(null);
+  const {currentUser, setCurrentUser} = useApp();
   const [appointment, setAppointment] = useState<Appointment>(
     {
       date:` ${new Date()}`,
@@ -31,30 +32,11 @@ const DoctorPage: React.FC = () => {
 
   const daysofweek = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
-   const loadUser = async () => {
-    try {
-      setIsLoading(true);
-      setError(null); 
-      const userData= await apiService.getCurrentUser();
-      setCurrentUser(userData.data.user );
-      // Always update localStorage with the latest complete data
-      localStorage.setItem('user', JSON.stringify(userData));
-    } catch (err) { 
-      // setError(err instanceof Error ? err.message : 'Failed to load user data');
-      console.error('Failed to load user data:', err);
-      // Clear invalid token and user data
-      // localStorage.removeItem('token');
-      // localStorage.removeItem('user');
-      // setCurrentUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   const loadDoctorAndAppointments = async () => {
     try {
       setIsLoading(true);
-      await loadUser();
       const doctorData = await doctorService.getDoctorById(id!);
       console.log("getDoctorbyid",doctorData);
       setDoctor(doctorData);
@@ -206,7 +188,7 @@ const DoctorPage: React.FC = () => {
           </h2>
           
           
-          {currentUser?.role=='Patient' && <form onSubmit={handleBookAppointment} className="space-y-4">
+          {currentUser?.role=='patient' && <form onSubmit={handleBookAppointment} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Date
@@ -296,7 +278,7 @@ const DoctorPage: React.FC = () => {
             </button>
           </form>}
 
-          { currentUser?.role!='Patient' && (
+          { currentUser?.role!='patient' && (
               <div>
                 <h1 className='text-white'>Need to a logged in User to book an appointment</h1>
               </div>

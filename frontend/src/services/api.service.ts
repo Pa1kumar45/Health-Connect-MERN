@@ -5,10 +5,7 @@ import { axiosInstance } from '../utils/axios';
 
 export const API_URL = 'http://localhost:5000/api';
 
-export function getAuthHeader() {
-  const token = localStorage.getItem('token');
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
-}
+
 
 export const apiService = {
   // User related APIs
@@ -34,9 +31,9 @@ export const apiService = {
     const response = await fetch(`${API_URL}/patients/profile`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeader()
+        'Content-Type': 'application/json'
       },
+      credentials:"include",
       body: JSON.stringify(userData)
     });
 
@@ -52,8 +49,3 @@ export const apiService = {
 
 
 
-export const getCurrentUser=async()=> {
-
-  const response = await axiosInstance('/auth/me');
-    return response
-  }

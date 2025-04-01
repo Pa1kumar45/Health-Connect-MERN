@@ -13,7 +13,7 @@ interface LoginFormData {
 
 const Login = () => {
   const navigate = useNavigate();
-  const { setCurrentUser } = useApp();
+  const { setCurrentUser,currentUser,login,role,setRole } = useApp();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<LoginFormData>({
@@ -23,10 +23,7 @@ const Login = () => {
   });
 
   // Clear any existing auth data on component mount
-  useEffect(() => {
-    authService.logout();
-    setCurrentUser(null);
-  }, [setCurrentUser]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,31 +34,12 @@ const Login = () => {
       // First, perform login
       console.log('formData');
       console.log(formData);
-      const response = await authService.login(formData);
-      console.log('response');
-      console.log(response);
+       
+      await login(formData);
       
-      // Store the JWT token
-      localStorage.setItem('token', response.data.token);
-      
-      // Fetch complete user profile using the token
-      const userData = await apiService.getCurrentUser();
-      
-      // Update context with complete user data
-      setCurrentUser((userData.data.user));
-      
-      // Store user data in localStorage
-      // localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Navigate to appropriate dashboard
-      console.log("login process complete and naviagetion")
-      navigate(userData.data.user.role === 'doctor' ? '/doctorProfile' : '/userProfile');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
       console.error('Login error:', err);
-      // Clear any partial auth data on error
-      authService.logout();
-      setCurrentUser(null);
+      
     } finally {
       setIsLoading(false);
     }

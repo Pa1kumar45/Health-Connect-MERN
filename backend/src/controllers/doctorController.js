@@ -78,11 +78,9 @@ export const deleteDoctor = async (req, res) => {
 // Update doctor's own profile
 export const updateDoctorProfile = async (req, res) => {
   try {
-
-    const doctor = await Doctor.findById(req.userId);
-    if (!doctor) {
-      return res.status(404).json({success:false, message: 'Doctor not found' });
-    }
+   console.log("update doctor profile");
+    const doctor=req.user;
+    console.log("data in the req object",doctor);
 
     const allowedUpdates = [
       'name',
@@ -101,7 +99,8 @@ export const updateDoctorProfile = async (req, res) => {
     });
 
     await doctor.save();
-    res.status(200).json({success:true,doctor});
+    console.log("from doctor profile",{...doctor.toObject(),role:req.role})
+    res.status(200).json({success:true,data:{...doctor.toObject(),role:req.role}});
   } catch (error) {
     res.status(500).json({ success:false,message: 'Error updating profile' });
   }

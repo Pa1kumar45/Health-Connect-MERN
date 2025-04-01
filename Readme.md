@@ -20,3 +20,7 @@ for all the endpoints the response object will have mainly two attribtes
 
 # 1. success: true/false
 # 2. message: string
+
+
+
+//there is still cookie issue the cookie doesnot store in the browser dont know the reason

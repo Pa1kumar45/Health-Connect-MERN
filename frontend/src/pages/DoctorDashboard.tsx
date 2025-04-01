@@ -10,7 +10,7 @@ import { apiService } from '../services/api.service';
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
-  const [currentUser, setcurrentUser] = useState(null);
+  const {currentUser, setCurrentUser} = useApp();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingAppointments, setPendingAppointments] = useState<Appointment[]>([]);
@@ -26,16 +26,13 @@ const DoctorDashboard = () => {
     try {
       setIsLoading(true);
       
-      const res = await apiService.getCurrentUser();
-      setcurrentUser(res.data.user);
-      
     //   console.log("all appointments",appointments);
       const appointments = await appointmentService.getDoctorAppointments();
-      console.log("pending",appointments);
+      console.log("all",appointments);
       setPendingAppointments(appointments.filter(app => app.status === 'pending'));
       // setUpcomingAppointments(appointments.filter(app => app.status === 'scheduled' && new Date(app.date) >= new Date() && new Date(app.startTime) > new Date()));
+      setActiveAppointments(appointments.filter(app => new Date(`${app.date}T${app.startTime}`) < new Date() && new Date(`${app.date}T${app.endTime}`) > new Date()));
       setUpcomingAppointments(appointments.filter(app => app.status === 'scheduled' ));
-      setActiveAppointments(appointments.filter(app => new Date(app.startTime) < new Date() && new Date(app.endTime) > new Date()));
     } catch (err) {
       setError('Failed to fetch appointments');
     } finally {
@@ -89,7 +86,7 @@ const DoctorDashboard = () => {
           <h2 className="text-xl font-semibold mb-4">Pending Appointments</h2>
           {pendingAppointments.map(appointment => (
             <div id={appointment._id} key={appointment._id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4">
-              <p>Patient: {appointment.patientId.name}</p>
+              <p>Patient: {appointment.patientId?.name}</p>
               <p>Date: {new Date(appointment.date).toLocaleString()}</p>
               <p>Time: {appointment.startTime} - {appointment.endTime}</p>
               <p>Mode: {appointment.mode}</p>
@@ -133,8 +130,8 @@ const DoctorDashboard = () => {
           ):(
           upcomingAppointments.map(appointment => (
             <div key={appointment._id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4">
-              <p>Patient: {appointment.patientId.name}</p>
-              <p>Date: {new Date(appointment.dateTime).toLocaleString()}</p>
+              <p>Patient: {appointment.patientId?.name}</p>
+              <p>Date: {new Date(`${appointment.date}T${appointment.startTime}`).toLocaleString()}</p>
               <p>Mode: {appointment.mode}</p>
             </div>
           )))}
@@ -152,17 +149,17 @@ const DoctorDashboard = () => {
         activeAppointments.map(appointment => (
           <div key={appointment._id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4 flex justify-between items-center">
             <div>
-              <p>Patient: {appointment.patientId.name}</p>
-              <p>Date: {new Date(appointment.dateTime).toLocaleString()}</p>
+              <p>Patient: {appointment?.patientId?.name}</p>
+              <p>Date: {new Date(`${appointment.date}T${appointment.startTime}`).toLocaleString()}</p>
               <p>Mode: {appointment.mode}</p>
             </div>
             <div>
-              {appointment.mode === 'video' && (
+              
                 <button className="bg-blue-500 text-white p-2 rounded mr-2">
                   <Video size={20} />
                 </button>
-              )}
-              <button className="bg-green-500 text-white p-2 rounded">
+             
+              <button className="bg-green-500 text-white p-2 rounded" onClick={()=>{navigate(`/chat/${appointment.patientId?._id}`)}}>
                 <MessageSquare size={20} />
               </button>
             </div>

@@ -42,35 +42,24 @@ const DoctorProfile = () => {
         setIsLoading(true);
         setError(null);
         
-        const token = localStorage.getItem('token');
-        if (!token) {
-          navigate('/login');
-          return;
+        if(currentUser?.role=='patient'){
+          return ;
         }
-
-        const res = await apiService.getCurrentUser();
-        const userData= res.data.user;
-        if (!userData || userData.role !== 'doctor') {
-          console.log('User is not a doctor');
-          authService.logout();
-          setCurrentUser(null);
-          navigate('/login');
-          return;
-        }
+       
         
         setFormData({
-          name: userData.name || '',
-          email: userData.email || '',
-          avatar: userData.avatar || '',
-          specialization: userData.specialization || '',
-          experience: userData.experience || 0,
-          qualification: userData.qualification || '',
-          about: userData.about || '',
-          contactNumber: userData.contactNumber || '',
-          schedule: initializeSchedule(userData.schedule || [])
+          name: currentUser?.name || '',
+          email: currentUser?.email || '',
+          avatar: currentUser?.avatar || '',
+          specialization: currentUser?.specialization || '',
+          experience: currentUser?.experience || 0,
+          qualification: currentUser?.qualification || '',
+          about: currentUser?.about || '',
+          contactNumber: currentUser?.contactNumber || '',
+          schedule: initializeSchedule(currentUser?.schedule || [])
         });
         
-        setCurrentUser(userData);
+        setCurrentUser(currentUser);
       } catch (err) {
         console.error('Failed to load profile:', err);
         setError(err instanceof Error ? err.message : 'Failed to load profile');
@@ -148,8 +137,6 @@ const DoctorProfile = () => {
       setError(null);
       setSuccess(null);
 
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Authentication required');
 
       console.log("data which is send to backend",{
         ...formData,
@@ -168,19 +155,14 @@ const DoctorProfile = () => {
           slots: day.slots.filter(slot => slot.startTime && slot.endTime)
         }))
       });
-      
-      setCurrentUser(updatedData);
-      localStorage.setItem('user', JSON.stringify(updatedData));
+      console.log("updated data after changing in doctor profilie",updatedData)
+      // setCurrentUser(updatedData);
       setSuccess('Profile updated successfully!');
     } catch (err) {
-      console.error('Failed to update profile:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update profile');
-      if (err instanceof Error && err.message.toLowerCase().includes('unauthorized')) {
-        authService.logout();
-        setCurrentUser(null);
-        navigate('/login');
+      console.log('Failed to update profile:', err);
+        
       }
-    } finally {
+     finally {
       setIsLoading(false);
     }
   };

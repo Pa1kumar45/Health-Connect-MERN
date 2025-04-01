@@ -26,13 +26,13 @@ export const getPatient = async (req, res) => {
 // Update patient profile
 export const updatePatient = async (req, res) => {
   try {
-
     const updates = req.body;
-    // console.log("updates", updates)
-    const id= req.userId;
+
+    const id= req.user._id;
     const patient
     = await Patient.findById(id);
     if (!patient) {
+      console.log("patient not fount")
       return res.status(404).json({success:false, message: 'Patient not found' });
     }
     Object.keys(updates).forEach(key => {
@@ -40,7 +40,7 @@ export const updatePatient = async (req, res) => {
     });
 
     await patient.save();
-    res.status(200).json({success:true,patient});
+    res.status(200).json({success:true,data:{...patient.toObject(),role:req.userRole}});
   } catch (error) {
     res.status(500).json({success:false, message: error.message });
   }

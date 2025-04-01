@@ -1,14 +1,14 @@
 import { Doctor } from '../types';
 const API_URL = 'http://localhost:5000/api';
 
-function getAuthHeader() {
-  const token = localStorage.getItem('token');
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
-}
+
 
 export const doctorService = {
   async getAllDoctors(): Promise<Doctor[]> {
-    const response = await fetch(`${API_URL}/doctors`);
+    const response = await fetch(`${API_URL}/doctors`,{
+      credentials:'include'
+    }
+    );
 
     if (!response.ok) {
       const error = await response.json();
@@ -19,7 +19,9 @@ export const doctorService = {
   },
 
   async getDoctorById(id: string): Promise<Doctor> {  
-    const response = await fetch(`${API_URL}/doctors/${id}`);
+    const response = await fetch(`${API_URL}/doctors/${id}`,{
+      credentials:'include'
+    });
 
     if (!response.ok) {
       const error = await response.json();
@@ -40,8 +42,8 @@ export const doctorService = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        ...getAuthHeader()
       },
+      credentials:'include',
       body: JSON.stringify(userData)
     });
 

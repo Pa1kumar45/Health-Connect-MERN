@@ -118,10 +118,8 @@ export interface LoginCredentials {
 export interface AuthResponse {
   success:boolean;
   message:string;
-  data:{
-    token: string;
-    user: Doctor | Patient;
-  }
+    data: Doctor | Patient;
+  
 }
 
 export interface MedicalRecord {

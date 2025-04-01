@@ -1,5 +1,5 @@
 import { Appointment } from '../types';
-import { getAuthHeader, API_URL } from './api.service';
+import {  API_URL } from './api.service';
 
 export const appointmentService = {
   async addAppointment(appointmentData: Partial<Appointment>): Promise<Appointment> {
@@ -8,8 +8,8 @@ export const appointmentService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...getAuthHeader()
       },
+      credentials:'include',
       body: JSON.stringify(appointmentData)
     });
 
@@ -25,9 +25,7 @@ export const appointmentService = {
 
   async getDoctorAppointments(): Promise<Appointment[]> {
     const response = await fetch(`${API_URL}/appointments/doctor/`, {
-      headers: {
-        ...getAuthHeader()
-      }
+      credentials:'include'
     });
 
     if (!response.ok) {
@@ -40,16 +38,14 @@ export const appointmentService = {
 
   async getPatientAppointments(): Promise<Appointment[]> {
     const response = await fetch(`${API_URL}/appointments/patient/`, {
-      headers: {
-        ...getAuthHeader()
-      }
+      credentials:'include'
     });
 
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Failed to fetch patient appointments');
     }
-
+    console.log("patiend appointmens",response);
     return response.json();
   },
 
@@ -59,8 +55,8 @@ export const appointmentService = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        ...getAuthHeader()
       },
+      credentials:'include',
       body: JSON.stringify(appointmentData)
     });
 
@@ -73,8 +69,8 @@ export const appointmentService = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        ...getAuthHeader()
       },
+      credentials:"include",
       body: JSON.stringify({ status })
     });
 

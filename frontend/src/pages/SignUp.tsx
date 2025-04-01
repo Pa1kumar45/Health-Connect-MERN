@@ -9,7 +9,7 @@ import { SignUpFormData } from '../types';
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const {currentUser, setCurrentUser } = useApp();
+  const {currentUser, setCurrentUser,signup } = useApp();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<SignUpFormData>({
@@ -43,15 +43,12 @@ const SignUp = () => {
         : formData;
 
       // First, register the user
-      const response=await authService.register(registrationData);
-      setCurrentUser(response.data);
+     await signup(registrationData);
+      console.log("signup after data",currentUser);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
-      console.error('Registration error:', err);
-      // Clear any partial auth data on error
-      authService.logout();
-    //   setCurrentUser(null);
+       console.error('Registration error:', err);
+      
     } finally {
       setIsLoading(false);
     }

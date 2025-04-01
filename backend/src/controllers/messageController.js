@@ -1,16 +1,21 @@
 import { v2 } from "cloudinary";
-import Message from "../models/Message";
-import Patient from "../models/Patient";
+import Message from "../models/Message.js";
+import Patient from "../models/Patient.js";
+import Doctor from "../models/Doctor.js";
 
 // import 
 export const getUsers= async (req,res)=>{
     try {
-        
-    const Id=req.Id;
+    console.log("getusers hit");
+    const {id}=req.params;
 
-    const onlineUsers= await Patient.find({_id:{$ne:Id}}).select("-password");
-
-    res.status(200).json({success:true,onlineUsers});
+    var data;
+    if(req.role=='doctor')
+    data= await Patient.findById(id).select("-password");
+    else
+    data= await Doctor.findById(id).select("-password")
+    console.log("get users",data);
+    res.status(200).json({success:true,data:{...data.toObject,role:req.role}});
     } catch (error) {
         console.log("error in getting online users",error)
         res.status(500).json({success:false,message:"Internal error"})
@@ -23,17 +28,20 @@ export const fetchMessages =async(req,res)=>{
     try {
         const {receiverId} = req.params;
 
-        const senderId= req.Id;
-
-        const messages= Message.find({$or:[
+        const senderId= req.user._id;
+//        here we shoudl use await to prevent error s
+// refer https://www.geeksforgeeks.org/mongodb-db-collection-find-method/
+        const messages= await Message.find({$or:[
             {senderId:senderId,receiverId:receiverId},
             {receiverId:senderId,senderId:receiverId}
         ]})
+        // console.log("fetced messages",messages)
+        
 
         res.status(200).json({success:true,messages});
         
     } catch (error) {
-        console.log("error in fethcing messages");
+        console.log("error in fethcing messages",error);
         res.status(500).json({success:false,message:error})
     }
 }
@@ -41,7 +49,7 @@ export const fetchMessages =async(req,res)=>{
 
 export const sendMessage =async(req,res)=>{
     try {
-        const senderId=req.Id;
+        const senderId=req.user._id;
         const {receiverId}=req.params;
 
         const {text,image}=req.body;
@@ -58,6 +66,8 @@ export const sendMessage =async(req,res)=>{
             text,
             image:imageUrl,
         });
+        newMessage.save();
+        console.log("created message",newMessage);
 
         //impliment socket io
 

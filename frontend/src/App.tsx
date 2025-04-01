@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route,Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useApp } from './context/AppContext';
-import ProtectedRoute from './components/ProtectedRoute';
 import SignUp from './pages/SignUp';
 // import UserProfile from './pages/UserProfile';
 import PatientProfile from './pages/PatientProfile';
@@ -12,16 +11,23 @@ import DoctorList from './pages/DoctorList';
 import DoctorPage from './pages/DoctorPage';
 import DoctorDashboard from './pages/DoctorDashboard';
 import PatientAppointments from './pages/PatientAppointments';
-import { getCurrentUser } from './services/api.service';
+import Chat from './pages/Chat';
 const App: React.FC = () => {
-  const { currentUser ,setCurrentUser} = useApp();
+  const { currentUser, setCurrentUser, getCurrentUser } = useApp();
   useEffect(() => {
-    const response =getCurrentUser();
-    if(response.success){
-      setCurrentUser(response.data);
+
+    const fetchCurrentUser = async () => {
+
+      const response = await getCurrentUser();
+
+      setCurrentUser(response.data.data);
+      console.log("navbar", currentUser);
     }
+    fetchCurrentUser();
   }, [])
-  
+
+
+
 
   return (
 
@@ -31,10 +37,10 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<DoctorList />} />
 
-          <Route path="/signup" element={!currentUser ? <SignUp /> :<Navigate to="/" />} />
+          <Route path="/signup" element={!currentUser ? <SignUp /> : <Navigate to="/" />} />
           <Route path="/login" element={!currentUser ? <Login /> : <Navigate to="/" />} />
-          if(currentUser){
-            <>
+          {currentUser ?
+            (<>
               <Route
                 path="/appointments"
                 element={
@@ -43,18 +49,23 @@ const App: React.FC = () => {
                 }
               />
               <Route
-          path="/doctorProfile"
-          element={
-           currentUser?.role=='doctor'?
-              <DoctorProfile />:
-              <PatientProfile/>
-            
-          }
-        />
-            </>
+                path="/profile"
+                element={
+                  currentUser?.role == 'doctor' ?
+                    <DoctorProfile /> :
+                    <PatientProfile />
+
+                }
+              />
+              <Route path='/chat/:id'
+              element={
+                <Chat/>
+              }/>
+            </>) :
+            <Route path="*" element={<Navigate to="/" />}></Route>
 
           }
-         
+
 
 
 
@@ -62,9 +73,7 @@ const App: React.FC = () => {
           <Route
             path="/doctor/:id"
             element={
-              <ProtectedRoute allowedRoles={['patient']}>
-                <DoctorPage />
-              </ProtectedRoute>
+              <DoctorPage />
             }
           />
 

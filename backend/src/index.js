@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.js';
 import doctorRoutes from './routes/doctors.js';
 import patientRoutes from './routes/patients.js';
 import appointmentRoutes from './routes/appointments.js';
+import messageRoutes from './routes/message.js'
 
 // Load environment variables
 dotenv.config();
@@ -38,7 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
-app.use('/api/message', appointmentRoutes);
+app.use('/api/message',messageRoutes);
 
 
 // Error handling middleware

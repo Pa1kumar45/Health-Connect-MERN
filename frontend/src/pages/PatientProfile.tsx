@@ -13,6 +13,7 @@ interface PatientFormData {
   avatar: string;
   dateOfBirth: string;
   gender: 'male' | 'female' | '';
+  role:string,
   bloodGroup: string;
   allergies: string;
   contactNumber: string;
@@ -27,59 +28,51 @@ const PatientProfile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [formData, setFormData] = useState<PatientFormData | null>(null);
+  const [formData, setFormData] = useState<PatientFormData | null>({
+    name:  '',
+    email:'',
+    avatar: '',
+    dateOfBirth: '',
+    role:'patient',
+    gender: '',
+    bloodGroup:  '',
+    allergies: '',
+    contactNumber:'',
+    emergencyContact: []
+  }
+    
+    
+  );
 
   useEffect(() => {
     const fetchPatientProfile = async () => {
       try {
-      console.log("useeffect")
-      console.log("data before applying useeffect",formData)
-      console.log("current user before applying useeffect",currentUser)
+      
         setIsLoading(true);
         setError(null);
         
-        
-        if (!isAuthenticated) {
-          navigate('/login');
-          return;
+        if(currentUser?.role=='doctor'){
+          return 
         }
-
-        var userData = await apiService.getCurrentUser();
-        userData=userData.data.user;
-        console.log("userData",userData)
-        console.log("emergency contact",userData.emergencyContact)
-        if (!userData || userData.role !== 'patient') {
-          // authService.logout();
-          setCurrentUser(null);
-          navigate('/login');
-          return;
-        }
-
         const initialFormData: PatientFormData = {
-          name: userData.name || '',
-          email: userData.email || '',
-          avatar: userData.avatar || '',
-          dateOfBirth: userData.dateOfBirth || '',
-          gender: userData.gender || '',
-          bloodGroup: userData.bloodGroup || '',
-          allergies: userData.allergies || '',
-          contactNumber: userData.contactNumber || '',
-          emergencyContact: userData.emergencyContact || []
+          name: currentUser?.name || '',
+          email: currentUser?.email || '',
+          avatar: currentUser?.avatar || '',
+          dateOfBirth: currentUser?.dateOfBirth || '',
+          role:currentUser?.role||'patient',
+          gender: currentUser?.gender || '',
+          bloodGroup: currentUser?.bloodGroup || '',
+          allergies: currentUser?.allergies || '',
+          contactNumber: currentUser?.contactNumber || '',
+          emergencyContact: currentUser?.emergencyContact || []
         };
-        
-        setFormData(initialFormData);
-        setCurrentUser(userData);
+        console.log("initialformdata",initialFormData)
+        setFormData({...formData,...initialFormData});
         console.log("current user after useeffect",currentUser)
         console.log("formdata after useeffect",formData)
       } catch (err) {
-        console.error('Failed to load profile:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load profile');
+        console.log('Failed to load profile:', err);
         
-        if (err instanceof Error && err.message.toLowerCase().includes('unauthorized')) {
-          authService.logout();
-          setCurrentUser(null);
-          navigate('/login');
-        }
       } finally {
         setIsLoading(false);
       }
@@ -149,33 +142,18 @@ const PatientProfile = () => {
       setError(null);
       setSuccess(null);
 
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication required');
-      }
-
-      
-      
-      
-
       console.log("data which is sent to the backend",currentUser)
 
       const updatedData = await apiService.updatePatientProfile({ ...currentUser,...formData
        }as Patient);
       console.log("updatedData",updatedData)
       
-      setCurrentUser(updatedData);
+      setCurrentUser(updatedData.data);
     //   localStorage.setItem('user', JSON.stringify(updatedData));
       setSuccess('Profile updated successfully!');
     } catch (err) {
-      console.error('Failed to update profile:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update profile');
+      console.log('Failed to update profile:', err);
       
-      if (err instanceof Error && err.message.toLowerCase().includes('unauthorized')) {
-        // authService.logout();
-        setCurrentUser(null);
-        navigate('/login');
-      }
     } finally {
       setIsLoading(false);
     }

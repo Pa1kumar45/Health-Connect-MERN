@@ -13,6 +13,7 @@ export const authService = {
       headers: {
         'Content-Type': 'application/json'
       },
+      credentials:'include',
       body: JSON.stringify(data)
     });
 
@@ -28,6 +29,8 @@ export const authService = {
   async login(credentials: LoginCredentials & { role: string }): Promise<AuthResponse> {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
+      credentials: 'include',
+      
       headers: {
         'Content-Type': 'application/json'
       },
@@ -50,9 +53,7 @@ export const authService = {
     }
 
     const response = await fetch(`${API_URL}/auth/me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      credentials:'include'
     });
 
     if (!response.ok) {

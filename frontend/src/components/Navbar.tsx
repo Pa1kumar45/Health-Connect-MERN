@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import { useApp, useTheme } from '../context/AppContext';
-import { removeToken, isAuthenticated } from '../utils/auth';
 import {authService} from '../services/auth.service';
 import DoctorDashboard from '../pages/DoctorDashboard';
 
@@ -11,16 +10,23 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { currentUser } = useApp();
+  const { currentUser,logout } = useApp();
 
   const handleLogout = () => {
-    authService.logout();
-    navigate('/login');
+    logout();
+    
   };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  useEffect(() => {
+    
+  console.log("navbar effect",currentUser)
+    
+  }, [currentUser])
+  
 
   return (
     <nav className="bg-white dark:bg-gray-800 shadow-lg">
@@ -42,16 +48,16 @@ const Navbar = () => {
             >
               Home
             </Link>
-            {isAuthenticated() ? (
+            {currentUser ? (
               <>
                 <Link
-                  to={currentUser?.role=='doctor'?'/doctorProfile':'/userProfile'}
+                  to={'/profile'}
                   className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Profile
                 </Link>
                 <Link
-                  to={currentUser?.role=='doctor'?'/doctor/appointments':'/user/appointments'}
+                  to={'appointments'}
                   className="block text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-base font-medium"
                   onClick={toggleMenu}
                 >
@@ -108,7 +114,7 @@ const Navbar = () => {
       </div>
 
       {/* Mobile menu */}
-      {isMenuOpen && (
+      {/* {isMenuOpen && (
         <div className="sm:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link
@@ -180,7 +186,7 @@ const Navbar = () => {
             </button>
           </div>
         </div>
-      )}
+      )} */}
     </nav>
   );
 };

@@ -87,9 +87,8 @@ export const register = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Registration successful',
-      data: {
-        user
-      }
+      data: {...user.toObject(),role}
+      
     });
   } catch (error) {
     console.error('register endpoint', error);
@@ -105,14 +104,14 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
 
   try {
-    // console.log('login hit');
+    console.log('login hit');
 
     const { email, password, role } = req.body;
 
     // Find user based on role
     const UserModel = role === 'doctor' ? Doctor : Patient;
     const user = await UserModel.findOne({ email });
-    // console.log('user', user);
+    console.log('loginuser', user);
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -132,16 +131,15 @@ export const login = async (req, res) => {
     }
 
     // Generate JWT token
+    console.log("sending longin dadat",{...user,role});
     generateToken(user._id, role,res);
-
 
 
     res.json({
       success: true,
       message: 'Login successful',
-      data: {
-        user:user
-      }
+      data: {...user.toObject(),role}
+      
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -157,32 +155,25 @@ export const login = async (req, res) => {
 export const getCurrentUser = async (req, res) => {
   try {
     console.log("hit get current User");
-    const id = req.userId;
-    const role=req.userRole;
-    let user;
-    if(role="doctor"){
-     user = await Patient.findById(id);
-    }
-    else{
-     user = await Doctor.findById(id);
-  
-    }
+   
+    let user=req.user;
 
     if (!user) {
+      console.log("error")
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
 
-    // console.log("get current user sent",formatUserResponse(user,req.userRole));
+    console.log("get current user sent",formatUserResponse(user,req.userRole));
     res.json({
       success: true,
-      data: user
+      data: {...user.toObject(),role:req.userRole}
       
     });
   } catch (error) {
-    console.error('Get current user error:', error);
+    console.log('Get current user error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching user data',

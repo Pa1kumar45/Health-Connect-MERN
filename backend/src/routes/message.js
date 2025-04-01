@@ -1,10 +1,10 @@
 import express from 'express';
-import { protect } from '../middleware/auth';
-import { getUsers,fetchMessages } from '../controllers/messageController';
+import { protect } from '../middleware/auth.js';
+import { getUsers,fetchMessages,sendMessage } from '../controllers/messageController.js';
 const router = express.Router();
 
 
-router.get('/users',protect,getUsers);
+router.get('/users/:id',protect,getUsers);
 
 router.get("/:receiverId",protect,fetchMessages);
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Calendar, Clock, Video, MessageCircle, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 // import { format } from 'date-fns';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { apiService } from '../services/api.service';
@@ -10,7 +10,8 @@ import { Doctor, Appointment, Patient } from '../types';
 import { doctorService } from '../services/doctor.service';
 
 const PatientAppointments = () => {
-  const [currentUser, setcurrentUser] = useState<Patient>()
+  const navigate= useNavigate();
+  const {currentUser, setCurrentUser} = useApp();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,11 +22,6 @@ const PatientAppointments = () => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const userdata= await apiService.getCurrentUser();
-        // console.log("userdata",userdata);
-        
-        // here typecasting the user data to Patient as the user can be of type Doctor or Patient
-        setcurrentUser(userdata.data.user as Patient);
         const [appointmentsData, doctorsData] = await Promise.all([
           appointmentService.getPatientAppointments(),
           doctorService.getAllDoctors()
@@ -206,7 +202,7 @@ const PatientAppointments = () => {
                       <Video className="h-5 w-5 mr-2" />
                       Join Video Call
                     </button>
-                    <button className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                    <button className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700" onClick={()=>navigate(`/chat/${doctor?._id}`)}>
                       <MessageCircle className="h-5 w-5 mr-2" />
                       Send Message
                     </button>
