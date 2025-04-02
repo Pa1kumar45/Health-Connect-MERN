@@ -10,11 +10,12 @@ import doctorRoutes from './routes/doctors.js';
 import patientRoutes from './routes/patients.js';
 import appointmentRoutes from './routes/appointments.js';
 import messageRoutes from './routes/message.js'
+import { app, server } from './lib/socket.js';
 
 // Load environment variables
 dotenv.config();
 
-const app = express();
+
 const PORT = process.env.PORT || 5000;
 
 // Get current directory name (ES modules equivalent of __dirname)
@@ -48,6 +49,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Something went wrong!' });
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

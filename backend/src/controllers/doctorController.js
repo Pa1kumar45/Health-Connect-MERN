@@ -15,13 +15,12 @@ export const getDoctors = async (req, res) => {
 
 // Get single doctor
 export const getDoctor = async (req, res) => {
-  // console.log("hit for getDoctor",req.params.id)
   
   try {
     const doctor = await Doctor.findById(req.params.id)
       .select('-password')
       .select('name email specialization experience qualification about contactNumber avatar schedule');
-    // console.log("got the doctor details",doctor)
+ 
     if (!doctor) {
       return res.status(404).json({success:false, message: 'Doctor not found' });
     }
@@ -78,9 +77,7 @@ export const deleteDoctor = async (req, res) => {
 // Update doctor's own profile
 export const updateDoctorProfile = async (req, res) => {
   try {
-   console.log("update doctor profile");
     const doctor=req.user;
-    console.log("data in the req object",doctor);
 
     const allowedUpdates = [
       'name',

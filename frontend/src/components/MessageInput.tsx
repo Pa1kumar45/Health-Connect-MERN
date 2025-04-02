@@ -1,16 +1,14 @@
 import { useRef, useState } from "react";
-import { useChatStore } from "../store/useChatStore";
 import { Image, Send, X } from "lucide-react";
-// import toast from "react-hot-toast";
 
-const MessageInput = ({sendMessage}:{sendMessage:()=>void}) => {
+const MessageInput = ({ sendMessage }) => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (!file.type.startsWith("image/")) {
+    if (!file || !file.type.startsWith("image/")) {
       console.log("Please select an image file");
       return;
     }
@@ -47,22 +45,22 @@ const MessageInput = ({sendMessage}:{sendMessage:()=>void}) => {
   };
 
   return (
-    <div className="p-4 w-full">
+    <div className="p-3 w-full bg-gray-900">
       {imagePreview && (
         <div className="mb-3 flex items-center gap-2">
           <div className="relative">
             <img
               src={imagePreview}
               alt="Preview"
-              className="w-20 h-20 object-cover rounded-lg border border-zinc-700"
+              className="w-20 h-20 object-cover rounded-lg border border-gray-700"
             />
             <button
               onClick={removeImage}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300
-              flex items-center justify-center"
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-800 
+              hover:bg-gray-700 transition-colors duration-200 flex items-center justify-center"
               type="button"
             >
-              <X className="size-3" />
+              <X className="size-3 text-gray-300" />
             </button>
           </div>
         </div>
@@ -72,7 +70,8 @@ const MessageInput = ({sendMessage}:{sendMessage:()=>void}) => {
         <div className="flex-1 flex gap-2">
           <input
             type="text"
-            className="w-full input input-bordered bg-amber-100 rounded-lg input-sm sm:input-md"
+            className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-100 border border-gray-700 
+                     focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             placeholder="Type a message..."
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -87,22 +86,28 @@ const MessageInput = ({sendMessage}:{sendMessage:()=>void}) => {
 
           <button
             type="button"
-            className={`hidden sm:flex btn btn-circle
-                     ${imagePreview ? "text-emerald-500" : "text-white"}`}
+            className={`hidden sm:flex items-center justify-center w-10 h-10 rounded-full
+                     bg-gray-800 hover:bg-gray-700 transition-colors duration-200
+                     ${imagePreview ? "text-blue-400" : "text-gray-300"}`}
             onClick={() => fileInputRef.current?.click()}
           >
-            <Image size={20} />
+            <Image size={18} />
           </button>
         </div>
         <button
           type="submit"
-          className="btn btn-sm btn-circle text-white"
+          className={`flex items-center justify-center w-10 h-10 rounded-full
+                   transition-colors duration-200
+                   ${!text.trim() && !imagePreview 
+                     ? "bg-gray-800 text-gray-500 cursor-not-allowed" 
+                     : "bg-blue-600 hover:bg-blue-700 text-white"}`}
           disabled={!text.trim() && !imagePreview}
         >
-          <Send size={22} />
+          <Send size={18} />
         </button>
       </form>
     </div>
   );
 };
+
 export default MessageInput;

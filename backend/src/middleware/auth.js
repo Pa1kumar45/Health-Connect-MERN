@@ -9,19 +9,15 @@ const verifyToken = async (token) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("decoded",decoded);
     // Check if token is expired
     if (Date.now() >= decoded.exp * 1000) {
       console.log("token expired");
       throw new Error('Token has expired');
     }
-    else{
-      console.log("in range")
-    }
+    
 
     const id = decoded.id;
     
-    console.log("id",id,"role",decoded.role)
     return { userId:id, role: decoded.role };
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
@@ -35,7 +31,6 @@ const verifyToken = async (token) => {
 export const protect = async (req, res, next) => {
   try {
     const token = req.cookies.token;
-    console.log("token",token)
     if(!token){
      return res.status(401).json({success:false,message:'missing token'})
     }
@@ -57,7 +52,6 @@ export const protect = async (req, res, next) => {
     req.token = token;
     req.user = user;
     req.userRole = role;
-    console.log("details from protect",user.name,role,user._id);
     next();
   } catch (error) {
     console.log("eroror",error)
@@ -66,7 +60,6 @@ export const protect = async (req, res, next) => {
 };
 
 export const doctorOnly = (req, res, next) => {
-  console.log("inside the doctor only ",req.userRole);
   if (req.userRole !== 'doctor') {
     return res.status(403).json({ 
       message: 'Access denied. This endpoint is only available to doctors.' 

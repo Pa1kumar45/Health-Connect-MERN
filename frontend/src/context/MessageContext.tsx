@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { axiosInstance } from "../utils/axios";
 import { Doctor, Message, Patient } from "../types";
+import { useApp } from "./AppContext";
 
 interface MessageContextType {
     messages:Message[]|null;
@@ -15,6 +16,7 @@ const MessageContext = createContext<MessageContextType|null>(null);
 export const MessageProvider:React.FC<{children:React.ReactNode}>=({children})=>{
 const [messages, setMessages] = useState<Message[] | null>(null);
 const [selectedUser, setSelectedUser] = useState<Doctor|Patient|null>(null);
+const {socket}= useApp();
 
     const getSelectedUser= async(id:string)=>{
         const userData = await axiosInstance.get(`/message/users/${id}`);
@@ -27,6 +29,7 @@ const [selectedUser, setSelectedUser] = useState<Doctor|Patient|null>(null);
         console.log("messages fetched",messagesData);
                setMessages(messagesData.data.messages);
     }
+    
 return(
     <MessageContext.Provider value={{messages,setMessages,fetchMessages,getSelectedUser}}>
         {children}

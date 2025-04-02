@@ -1,12 +1,13 @@
-import { v2 } from "cloudinary";
+
 import Message from "../models/Message.js";
 import Patient from "../models/Patient.js";
 import Doctor from "../models/Doctor.js";
+import { getSocketId, io } from "../lib/socket.js";
+import cloudinary from '../lib/cloudinary.js';
 
 // import 
 export const getUsers= async (req,res)=>{
     try {
-    console.log("getusers hit");
     const {id}=req.params;
 
     var data;
@@ -14,7 +15,6 @@ export const getUsers= async (req,res)=>{
     data= await Patient.findById(id).select("-password");
     else
     data= await Doctor.findById(id).select("-password")
-    console.log("get users",data);
     res.status(200).json({success:true,data:{...data.toObject,role:req.role}});
     } catch (error) {
         console.log("error in getting online users",error)
@@ -35,7 +35,6 @@ export const fetchMessages =async(req,res)=>{
             {senderId:senderId,receiverId:receiverId},
             {receiverId:senderId,senderId:receiverId}
         ]})
-        // console.log("fetced messages",messages)
         
 
         res.status(200).json({success:true,messages});
@@ -55,7 +54,9 @@ export const sendMessage =async(req,res)=>{
         const {text,image}=req.body;
         let imageUrl;
         if(image){
-            const uploadData= await v2.uploader.upload(image);
+            console.log("identified as image")
+            const uploadData= await cloudinary.uploader.upload(image);
+            // const uploadData= await v2.uploader.upload(image);
             imageUrl=uploadData.secure_url;
 
         }
@@ -66,10 +67,10 @@ export const sendMessage =async(req,res)=>{
             text,
             image:imageUrl,
         });
-        newMessage.save();
-        console.log("created message",newMessage);
-
-        //impliment socket io
+        await newMessage.save();
+        const reciverSocketId=getSocketId(receiverId);
+        if(reciverSocketId)
+        io.to(reciverSocketId).emit("newMessage",newMessage);
 
         res.status(201).json({success:true,newMessage})
     } catch (error) {

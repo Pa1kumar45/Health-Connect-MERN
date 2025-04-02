@@ -33,7 +33,7 @@ export const register = async (req, res) => {
 
     // every thing should be sent from frontend and it is expected as no check here
     const { name, email, password, role, ...additionalData } = req.body;
-    console.log('req.body');
+    
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({
@@ -80,10 +80,8 @@ export const register = async (req, res) => {
     await user.save();
 
     // Generate JWT token
-    console.log('createed user')
-    console.log(user._id)
+   
     generateToken(user._id, role, res);
-    // console.log(`token genereated ${token}`)
     res.status(201).json({
       success: true,
       message: 'Registration successful',
@@ -104,14 +102,13 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
 
   try {
-    console.log('login hit');
+    console.log("login hit");
 
     const { email, password, role } = req.body;
 
     // Find user based on role
     const UserModel = role === 'doctor' ? Doctor : Patient;
     const user = await UserModel.findOne({ email });
-    console.log('loginuser', user);
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -131,8 +128,8 @@ export const login = async (req, res) => {
     }
 
     // Generate JWT token
-    console.log("sending longin dadat",{...user,role});
     generateToken(user._id, role,res);
+    
 
 
     res.json({
@@ -154,7 +151,6 @@ export const login = async (req, res) => {
 // Get current user
 export const getCurrentUser = async (req, res) => {
   try {
-    console.log("hit get current User");
    
     let user=req.user;
 
@@ -166,8 +162,7 @@ export const getCurrentUser = async (req, res) => {
       });
     }
 
-    console.log("get current user sent",formatUserResponse(user,req.userRole));
-    res.json({
+  res.json({
       success: true,
       data: {...user.toObject(),role:req.userRole}
       

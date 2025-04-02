@@ -3,6 +3,8 @@ import { Doctor, Patient, SignUpFormData } from '../types';
 import { apiService } from '../services/api.service';
 import { axiosInstance } from '../utils/axios';
 import { AuthResponse, LoginCredentials } from '../types';
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 
 interface ThemeContextType {
   isDarkMode: boolean;
@@ -18,6 +20,9 @@ interface AppContextType extends ThemeContextType {
   signup: (data: SignUpFormData) => void;
   login: (data: LoginCredentials) => void;
   getCurrentUser: () => void;
+  connectSocket:(id:string)=> void;
+  socket:Socket|null;
+  
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -29,6 +34,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [currentUser, setCurrentUser] = useState<Doctor | Patient | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +55,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const response = await axiosInstance.post('/auth/register', data);
       console.log("Signup response:", response.data);
 
-      await setCurrentUser(response.data.data);
+     setCurrentUser(response.data.data);
+     const id = response.data.data._id;
+     connectSocket(id);
     } catch (error) {
       console.error("Signup error:", error);
     }
@@ -62,6 +70,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const response = await axiosInstance.post('/auth/login', data);
       console.log("login responce", response);
       setCurrentUser(response.data.data);
+      
+     const id = response.data.data._id;
+      connectSocket(id);
 
     } catch (error) {
       console.log(error);
@@ -78,6 +89,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const getCurrentUser = async () => {
     const response = await axiosInstance('/auth/me');
     return response
+  }
+
+  const connectSocket =(id)=>{
+    console.log("new message");
+    if(socket?.connected) return ;
+    const s = io('http://localhost:5000',{
+      query:{
+        userId:id
+      }
+    });
+    s.connect();
+    setSocket(s);
   }
 
 
@@ -97,7 +120,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         logout,
         signup,
         login,
-        getCurrentUser
+        getCurrentUser,
+        connectSocket,
+        socket
       }}
     >
       {children}
