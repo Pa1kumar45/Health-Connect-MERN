@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Star, Clock } from 'lucide-react';
+import { Star, Clock, Briefcase, GraduationCap, User, Phone } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { doctorService } from '../services/doctor.service';
 import { appointmentService } from '../services/appointment.service';
@@ -100,190 +100,242 @@ const DoctorPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-4xl mx-auto p-6">
       {error && (
-        <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-400 text-red-700 shadow-sm" role="alert">
           {error}
         </div>
       )}
       
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-        <div className="p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {doctor.name}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300">{doctor.specialization}</p>
-              <div className="flex items-center mt-2">
-                <Star className="h-5 w-5 text-yellow-400" />
-                <span className="ml-1 text-gray-600 dark:text-gray-300">
-                  0 reviews
-                </span>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <div className="p-8">
+          <div className="flex items-start justify-between mb-10">
+            <div className="flex items-center space-x-6">
+              {doctor.avatar ? (
+                <img
+                  src={doctor.avatar}
+                  alt={doctor.name}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-blue-100 dark:border-blue-900"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-4xl font-bold border-4 border-blue-100 dark:border-blue-900">
+                  {doctor.name?.charAt(0).toUpperCase() || 'D'}
+                </div>
+              )}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {doctor.name ? `Dr. ${doctor.name}` : 'Doctor Profile'}
+                </h1>
+                {doctor.specialization && (
+                  <p className="text-lg text-blue-600 dark:text-blue-400 mt-1">
+                    {doctor.specialization}
+                  </p>
+                )}
+                {doctor.experience && (
+                  <div className="flex items-center mt-2">
+                    <Briefcase size={18} className="text-gray-500 dark:text-gray-400" />
+                    <span className="ml-2 text-gray-600 dark:text-gray-300">
+                      {doctor.experience} years of experience
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
-            {doctor.avatar && (
-              <img
-                src={doctor.avatar}
-                alt={doctor.name}
-                className="w-24 h-24 rounded-full"
-              />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              {doctor.qualification && (
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <GraduationCap size={20} className="text-blue-500" /> Qualifications
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {doctor.qualification}
+                  </p>
+                </div>
+              )}
+
+              {doctor.about && (
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <User size={20} className="text-blue-500" /> About
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {doctor.about}
+                  </p>
+                </div>
+              )}
+
+              {doctor.contactNumber && (
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <Phone size={20} className="text-blue-500" /> Contact
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    {doctor.contactNumber}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-6">
+              {doctor.schedule && doctor.schedule.length > 0 && (
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <Clock size={20} className="text-blue-500" /> Schedule
+                  </h2>
+                  <div className="space-y-4">
+                    {doctor.schedule.map((schedule, index) => (
+                      schedule.slots && schedule.slots.length > 0 && (
+                        <div key={index} className="border-b dark:border-gray-600 pb-4 last:border-b-0">
+                          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">
+                            {schedule.day}
+                          </h3>
+                          <div className="grid grid-cols-2 gap-2">
+                            {schedule.slots.map((slot, slotIndex) => {
+                              const dayIndex = daysofweek.indexOf(schedule.day);
+                              const today = new Date().getDay();
+                              return (
+                                <button
+                                  key={slotIndex}
+                                  className={`p-3 rounded-lg text-white text-sm font-medium transition-colors ${
+                                    getSlotColor(slot, schedule.day)
+                                  } ${
+                                    slot.isAvailable && dayIndex >= today
+                                      ? 'hover:opacity-90'
+                                      : 'opacity-50 cursor-not-allowed'
+                                  }`}
+                                  onClick={() => {
+                                    setAppointment({
+                                      ...appointment,
+                                      date: schedule.day,
+                                      startTime: slot.startTime,
+                                      endTime: slot.endTime
+                                    });
+                                  }}
+                                  disabled={!slot.isAvailable || dayIndex < today}
+                                >
+                                  {`${slot.startTime} - ${slot.endTime}`}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-8 bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+              Book Appointment
+            </h2>
+            
+            {currentUser?.role === 'patient' ? (
+              <form onSubmit={handleBookAppointment} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      value={appointment.date}
+                      onChange={(e) => setAppointment({...appointment, date: e.target.value})}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Start Time
+                    </label>
+                    <input
+                      type="time"
+                      value={appointment.startTime}
+                      onChange={(e) => setAppointment({...appointment, startTime: e.target.value})}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      End Time
+                    </label>
+                    <input
+                      type="time"
+                      value={appointment.endTime}
+                      onChange={(e) => setAppointment({...appointment, endTime: e.target.value})}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Appointment Type
+                    </label>
+                    <div className="flex space-x-4">
+                      <button
+                        type="button"
+                        onClick={() => setAppointment({...appointment, mode: 'video'})}
+                        className={`flex-1 px-4 py-3 rounded-lg border transition-colors ${
+                          appointment.mode === 'video'
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        Video Call
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAppointment({...appointment, mode: 'chat'})}
+                        className={`flex-1 px-4 py-3 rounded-lg border transition-colors ${
+                          appointment.mode === 'chat'
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        Chat
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Reason for Appointment
+                  </label>
+                  <textarea
+                    value={appointment.reason}
+                    onChange={(e) => setAppointment({...appointment, reason: e.target.value})}
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                  Book Appointment
+                </button>
+              </form>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-gray-600 dark:text-gray-300">
+                  Please log in as a patient to book an appointment
+                </p>
+              </div>
             )}
           </div>
-
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">About</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">{doctor.about}</p>
-          </div>
-
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Qualifications</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">{doctor.qualification}</p>
-          </div>
-
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Experience</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">{doctor.experience} years</p>
-          </div>
-
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Contact Number</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">{doctor.contactNumber}</p>
-          </div>
-
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Schedule</h2>
-            {doctor.schedule.map((schedule, index) => (
-              
-              (schedule.slots.length>0) &&
-              (<div key={index} className="mt-4">
-                <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200">{schedule.day}</h3>
-                <div className="mt-2 grid grid-cols-4 gap-2">
-                  {schedule.slots.map((slot, slotIndex) => {
-                       const dayIndex = daysofweek.indexOf(schedule.day);
-                       const today = new Date().getDay();
-                    return (
-                      <button
-                        key={slotIndex}
-                        className={`p-2 rounded ${getSlotColor(slot,schedule.day)} text-white`}
-                        onClick={() => {
-                          setAppointment({...appointment,date:schedule.day,startTime:slot.startTime,endTime:slot.endTime});
-            
-                        }}
-                        disabled={slot.isAvailable !== true||dayIndex<today}
-                      >
-                        {`  ${slot.startTime} - ${slot.endTime}`}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>)
-            ))}
-          </div>
-        </div>
-
-        <div className="p-6 bg-gray-50 dark:bg-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Book Appointment
-          </h2>
-          
-          
-          {currentUser?.role=='patient' && <form onSubmit={handleBookAppointment} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Date
-              </label>
-              <input
-                type="date"
-                value={appointment.date}
-                onChange={(e) => setAppointment({...appointment,date:e.target.value})}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Start Time
-              </label>
-              <input
-                type="time"
-                value={appointment.startTime}
-                onChange={(e) => setAppointment({...appointment,startTime:e.target.value})}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                End Time
-              </label>
-              <input
-                type="time"
-                value={appointment.endTime}
-                onChange={(e) => setAppointment({...appointment,endTime:e.target.value})}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Reason for Appointment
-              </label>
-              <textarea
-                value={appointment.reason}
-                onChange={(e) => setAppointment({...appointment,reason:e.target.value})}
-                rows={3}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Appointment Type
-              </label>
-              <div className="mt-2 flex space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setAppointment({...appointment,mode:'video'})}
-                  className={`flex items-center px-4 py-2 rounded-md ${
-                    appointment.mode === 'video'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  Video Call
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAppointment({...appointment,mode:'chat'})}
-                  className={`flex items-center px-4 py-2 rounded-md ${
-                    appointment.mode === 'chat'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  Chat
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Book Appointment
-            </button>
-          </form>}
-
-          { currentUser?.role!='patient' && (
-              <div>
-                <h1 className='text-white'>Need to a logged in User to book an appointment</h1>
-              </div>
-                )
-          }
         </div>
       </div>
     </div>

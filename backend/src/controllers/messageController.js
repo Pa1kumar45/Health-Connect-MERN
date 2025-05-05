@@ -1,4 +1,3 @@
-
 import Message from "../models/Message.js";
 import Patient from "../models/Patient.js";
 import Doctor from "../models/Doctor.js";
@@ -6,22 +5,42 @@ import { getSocketId, io } from "../lib/socket.js";
 import cloudinary from '../lib/cloudinary.js';
 
 // import 
-export const getUsers= async (req,res)=>{
+export const getUsers = async (req, res) => {
     try {
-    const {id}=req.params;
+        const { id } = req.params;
 
-    var data;
-    if(req.role=='doctor')
-    data= await Patient.findById(id).select("-password");
-    else
-    data= await Doctor.findById(id).select("-password")
-    res.status(200).json({success:true,data:{...data.toObject,role:req.role}});
+        // Search in both collections
+        const [patient, doctor] = await Promise.all([
+            Patient.findById(id).select("-password"),
+            Doctor.findById(id).select("-password")
+        ]);
+
+        if (!patient && !doctor) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found in either collection"
+            });
+        }
+
+        // Determine which user was found and their role
+        const foundUser = patient || doctor;
+        const userRole = patient ? 'patient' : 'doctor';
+
+        res.status(200).json({
+            success: true,
+            data: {
+                ...foundUser.toObject(),
+                role: userRole
+            }
+        });
     } catch (error) {
-        console.log("error in getting online users",error)
-        res.status(500).json({success:false,message:"Internal error"})
+        console.error("Error in getting user:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
     }
-    
-}
+};
 
 
 export const fetchMessages =async(req,res)=>{

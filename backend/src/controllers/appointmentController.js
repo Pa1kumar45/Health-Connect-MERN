@@ -151,6 +151,7 @@ export const getDoctorAppointments = async (req, res) => {
     const appointments = await Appointment.find({ doctorId })
       .populate('patientId', 'name')
       .sort({ date: 1,startTime:1 });
+      //add user details to the appointments
     console.log("appointments",appointments);
     res.json(appointments);
   } catch (error) {

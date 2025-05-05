@@ -63,13 +63,13 @@ const Navbar = () => {
                 >
                   Appointments
                 </Link> 
-                <Link
+                {/* <Link
                   to="/prescriptions"
                   className="block text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-base font-medium"
                   onClick={toggleMenu}
                 >
                   Prescriptions
-                </Link>
+                </Link> */}
                 <button
                   onClick={handleLogout}
                   className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
@@ -93,13 +93,13 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            <button
+            {/* <button
               onClick={toggleDarkMode}
               className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-2 rounded-md"
               aria-label="Toggle dark mode"
             >
               {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button>
+            </button> */}
           </div>
 
           <div className="flex items-center sm:hidden">

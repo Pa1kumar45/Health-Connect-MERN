@@ -8,6 +8,7 @@ interface MessageContextType {
     setMessages:(messages:Message[]|null)=>void;
     fetchMessages:(id:string)=>void;
     getSelectedUser:(id:string)=>void;
+    selectedUser:Doctor|Patient|null;
 
 }
 
@@ -31,7 +32,7 @@ const {socket}= useApp();
     }
     
 return(
-    <MessageContext.Provider value={{messages,setMessages,fetchMessages,getSelectedUser}}>
+    <MessageContext.Provider value={{messages,setMessages,fetchMessages,getSelectedUser ,selectedUser}}>
         {children}
     </MessageContext.Provider>
 )

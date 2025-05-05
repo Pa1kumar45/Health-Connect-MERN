@@ -6,61 +6,104 @@ import MessageInput from '../components/MessageInput';
 import { useMessage } from '../context/MessageContext';
 import { formatMessageTime } from '../lib/utils';
 
+interface User {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+    role: string;
+    profileCompleted: boolean;
+    contactNumber?: string;
+    dateOfBirth?: string;
+    gender?: string;
+    bloodGroup?: string;
+    allergies?: string;
+    emergencyContact?: Array<{
+        name: string;
+        relationship: string;
+        contactNumber: string;
+    }>;
+}
+
+interface Message {
+    _id: string;
+    senderId: string;
+    receiverId: string;
+    text?: string;
+    image?: string;
+    createdAt: string;
+}
+
 const Chat = () => {
-    const { id } = useParams();
+    const { id } = useParams<{ id: string }>();
     const { currentUser, socket } = useApp();
-    const { fetchMessages, messages, getSelectedUser, selectedUser, setMessages } = useMessage();
+    const messageContext = useMessage();
     
-    const messageEndRef = useRef(null);
-    const chatContainerRef = useRef(null);
+    if (!messageContext) {
+        return <div>Loading...</div>;
+    }
     
-    useEffect(() => {
-      listenToNewMessages();
-      return () => {
-        stopListeningToMessages();
-      }
-    }, [])
+    const { fetchMessages, messages, getSelectedUser, selectedUser, setMessages } = messageContext;
+    
+    const messageEndRef = useRef<HTMLDivElement>(null);
+    const chatContainerRef = useRef<HTMLDivElement>(null);
     
     useEffect(() => {
         if (id) {
-            fetchMessages(id);
-            getSelectedUser(id);
+            fetchMessages_data(id);
         }
-    }, [id]); // Only depend on id
+    }, [id]);
+
+    const fetchMessages_data = async (id: string) => {
+        try {
+            await fetchMessages(id);
+            await getSelectedUser(id);
+        } catch (error) {
+            console.error("Error fetching chat data:", error);
+        }
+    }
     
     useEffect(() => {
-        if (messageEndRef.current && messages?.length > 0) {
+        if (!socket) return;
+
+        const handleNewMessage = (newMessage: Message) => {
+            console.log("New message received:", newMessage);
+            if (newMessage.receiverId === currentUser?._id) {
+                setMessages(prevMessages => {
+                    if (!prevMessages) return [newMessage];
+                    return [...prevMessages, newMessage];
+                });
+            }
+        };
+
+        socket.on("newMessage", handleNewMessage);
+
+        return () => {
+            socket.off("newMessage", handleNewMessage);
+        };
+    }, [socket, currentUser?._id, setMessages]);
+
+    useEffect(() => {
+        if (messageEndRef.current && messages && messages.length > 0) {
             messageEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages]);
 
-    const sendMessage = async (data) => {
+    const sendMessage = async (data: { text?: string; image?: string }) => {
         try {
             const response = await axiosInstance.post(`/message/send/${id}`, data);
             console.log("Message sent:", response.data.newMessage);
-            setMessages([...messages, response.data.newMessage]);
-            
+            setMessages(prevMessages => {
+                if (!prevMessages) return [response.data.newMessage];
+                return [...prevMessages, response.data.newMessage];
+            });
         } catch (error) {
             console.error("Error sending message:", error);
         }
     }
 
-    const listenToNewMessages = () => {
-        socket?.on("newMessage", (newMessage) => {
-           console.log("messge socket", newMessage);
-           if(newMessage.receiverId == currentUser?._id) {
-               setMessages([...messages, newMessage])
-           }
-        })
-    }
-    
-    const stopListeningToMessages = () => {
-        socket?.off('newMessage');
-    }
-    
     return (
         <div className="flex flex-col h-full bg-gray-900 text-gray-100">
-            {/* Main chat container with fixed height and overflow control */}
             <div className="flex flex-col h-full">
                 <div 
                     ref={chatContainerRef}
@@ -68,32 +111,38 @@ const Chat = () => {
                 >
                     {messages?.length > 0 ? (
                         <div className="space-y-3 pb-1">
-                            {messages.map((message, index) => {
+                            {messages.map((message: Message, index: number) => {
                                 const isCurrentUser = message.senderId === currentUser?._id;
                                 const isLastMessage = index === messages.length - 1;
                                 
                                 return (
                                     <div
                                         key={message._id}
-                                        className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
+                                        className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} items-start gap-3`}
                                         ref={isLastMessage ? messageEndRef : null}
                                     >
                                         {!isCurrentUser && (
-                                            <div className="flex-shrink-0 mr-2">
-                                                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 overflow-hidden">
-                                                    <img
-                                                        src={selectedUser?.avatar || "/image.png"}
-                                                        alt="profile pic"
-                                                        className="object-cover w-full h-full rounded-full" 
-                                                    />
+                                            <div className="flex-shrink-0">
+                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-blue-100 dark:border-blue-900 overflow-hidden">
+                                                    {selectedUser?.avatar ? (
+                                                        <img
+                                                            src={selectedUser.avatar}
+                                                            alt={selectedUser.name || "User"}
+                                                            className="object-cover w-full h-full"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-lg font-bold">
+                                                            {selectedUser?.name?.charAt(0).toUpperCase() || 'U'}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
                                         
-                                        <div className={`max-w-xs md:max-w-md`}>
-                                            <div className="text-xs mb-1 flex items-center">
-                                                <span className="font-medium mr-2">
-                                                    {isCurrentUser ? "You" : selectedUser?.name || "User"}
+                                        <div className="flex flex-col max-w-[70%]">
+                                            <div className="text-sm mb-1 flex items-center gap-2">
+                                                <span className="font-semibold text-blue-400">
+                                                    {isCurrentUser ? currentUser.name : selectedUser?.name || "User"}
                                                 </span>
                                                 <time className="text-xs text-gray-400">
                                                     {formatMessageTime(message.createdAt)}
@@ -120,13 +169,19 @@ const Chat = () => {
                                         </div>
                                         
                                         {isCurrentUser && (
-                                            <div className="flex-shrink-0 ml-2">
-                                                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 overflow-hidden">
-                                                    <img
-                                                        src={currentUser?.avatar || "/image.png"}
-                                                        alt="profile pic"
-                                                        className="object-cover w-full h-full rounded-full" 
-                                                    />
+                                            <div className="flex-shrink-0">
+                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-blue-100 dark:border-blue-900 overflow-hidden">
+                                                    {currentUser?.avatar ? (
+                                                        <img
+                                                            src={currentUser.avatar}
+                                                            alt={currentUser.name || "You"}
+                                                            className="object-cover w-full h-full"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-lg font-bold">
+                                                            {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
@@ -144,13 +199,12 @@ const Chat = () => {
                     )}
                 </div>
 
-                {/* Message input fixed at bottom */}
                 <div className="mt-auto border-t border-gray-800">
                     <MessageInput sendMessage={sendMessage} />
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default Chat;

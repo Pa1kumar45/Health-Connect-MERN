@@ -30,7 +30,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('darkMode');
-    return savedTheme ? JSON.parse(savedTheme) : false;
+    return savedTheme ? JSON.parse(savedTheme) : true;
   });
 
   const [currentUser, setCurrentUser] = useState<Doctor | Patient | null>(null);
@@ -89,21 +89,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const getCurrentUser = async () => {
     const response = await axiosInstance('/auth/me');
+    console.log("current me ",response)
+    // const id = response.data.data._id;
+    // connectSocket(id);
     return response
   }
 
-  const connectSocket =(id)=>{
-    console.log("new message");
-    if(socket?.connected) return ;
-    const s = io('http://localhost:5000',{
-      query:{
-        userId:id
+  const connectSocket = (id: string) => {
+    if (socket?.connected) {
+      console.log('Socket already connected');
+      return;
+    }
+
+    // Disconnect existing socket if any
+    if (socket) {
+      socket.disconnect();
+    }
+
+    const newSocket = io('http://localhost:5000', {
+      query: { userId: id },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000
+    });
+
+    newSocket.on('connect', () => {
+      console.log('Socket connected successfully');
+    });
+
+    newSocket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason);
+      if (reason === 'io server disconnect') {
+        // Server initiated disconnect, try to reconnect
+        newSocket.connect();
       }
     });
-    s.connect();
-    setSocket(s);
-  }
 
+    newSocket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+
+    newSocket.on('error', (error) => {
+      console.error('Socket error:', error);
+    });
+
+    setSocket(newSocket);
+  };
+
+  // Cleanup socket on unmount
+  useEffect(() => {
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+  }, [socket]);
 
   const toggleDarkMode = useCallback(() => {
     setIsDarkMode((prev: boolean) => !prev);
