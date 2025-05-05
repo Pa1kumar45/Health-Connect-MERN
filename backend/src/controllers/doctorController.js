@@ -96,8 +96,8 @@ export const updateDoctorProfile = async (req, res) => {
     });
 
     await doctor.save();
-    console.log("from doctor profile",{...doctor.toObject(),role:req.role})
-    res.status(200).json({success:true,data:{...doctor.toObject(),role:req.role}});
+    console.log("from doctor profile",{...doctor.toObject(),role: "doctor"})
+    res.status(200).json({success:true,data:{...doctor.toObject(),role: "doctor"}});
   } catch (error) {
     res.status(500).json({ success:false,message: 'Error updating profile' });
   }

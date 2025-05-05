@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Calendar, Clock, Plus, Trash2 } from 'lucide-react';
+import { User, Mail, Calendar, Clock, Plus, Trash2, GraduationCap, Briefcase, Phone } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Doctor, Schedule, Slot } from '../types';
 import { apiService } from '../services/api.service';
@@ -23,10 +23,20 @@ interface DoctorFormData {
 const DoctorProfile = () => {
   const navigate = useNavigate();
   const { currentUser, setCurrentUser } = useApp();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [formData, setFormData] = useState<DoctorFormData | null>(null);
+  const [formData, setFormData] = useState<DoctorFormData | null>({
+    name: '',
+    email: '',
+    avatar: '',
+    specialization: '',
+    experience: 0,
+    qualification: '',
+    about: '',
+    contactNumber: '',
+    schedule: []
+  });
 
   const initializeSchedule = (existingSchedule: Schedule[]) => {
     const days: Schedule['day'][] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -42,12 +52,11 @@ const DoctorProfile = () => {
         setIsLoading(true);
         setError(null);
         
-        if(currentUser?.role=='patient'){
-          return ;
+        if(currentUser?.role === 'patient') {
+          return;
         }
-       
-        
-        setFormData({
+
+        const initialFormData: DoctorFormData = {
           name: currentUser?.name || '',
           email: currentUser?.email || '',
           avatar: currentUser?.avatar || '',
@@ -57,24 +66,19 @@ const DoctorProfile = () => {
           about: currentUser?.about || '',
           contactNumber: currentUser?.contactNumber || '',
           schedule: initializeSchedule(currentUser?.schedule || [])
-        });
+        };
         
-        setCurrentUser(currentUser);
+        setFormData(initialFormData);
       } catch (err) {
         console.error('Failed to load profile:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load profile');
-        if (err instanceof Error && err.message.toLowerCase().includes('unauthorized')) {
-          authService.logout();
-          setCurrentUser(null);
-          navigate('/login');
-        }
+        setError('Failed to load profile');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUserProfile();
-  }, [navigate, setCurrentUser]);
+  }, [currentUser]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!formData) return;
@@ -130,67 +134,104 @@ const DoctorProfile = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData || !currentUser) return;
+    if (!formData) return;
     
     try {
       setIsLoading(true);
       setError(null);
       setSuccess(null);
 
-
-      console.log("data which is send to backend",{
+      // Create a new object with all the form data
+      const submitData = {
+        ...currentUser,
         ...formData,
-        role: 'doctor',
-        schedule: formData.schedule.map(day => ({
-          ...day,
-          slots: day.slots.filter(slot => slot.startTime && slot.endTime)
-        }))
-      });
+        schedule: formData.schedule
+      };
 
-      const updatedData = await doctorService.updateDoctorProfile({
-        ...formData,
-        role: 'doctor',
-        schedule: formData.schedule.map(day => ({
-          ...day,
-          slots: day.slots.filter(slot => slot.startTime && slot.endTime)
-        }))
-      });
-      console.log("updated data after changing in doctor profilie",updatedData)
-      // setCurrentUser(updatedData);
+      const response = await doctorService.updateDoctorProfile(submitData as Doctor);
+      
+      // Update both currentUser and formData with the complete data
+      setCurrentUser({...currentUser,...response});
+      console.log("response",response)
+      
+      // Create a new form data object with all required fields
+      const newFormData: DoctorFormData = {
+        name: response.name || '',
+        email: response.email || '',
+        avatar: response.avatar || '',
+        specialization: response.specialization || '',
+        experience: response.experience || 0,
+        qualification: response.qualification || '',
+        about: response.about || '',
+        contactNumber: response.contactNumber || '',
+        schedule: formData.schedule // Preserve the current schedule
+      };
+      
+      setFormData(newFormData);
       setSuccess('Profile updated successfully!');
     } catch (err) {
-      console.log('Failed to update profile:', err);
-        
-      }
-     finally {
+      console.error('Failed to update profile:', err);
+      setError('Failed to update profile. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   if (!currentUser || !formData) {
     return (
-      <div className="text-center text-red-600 dark:text-red-400">
-        Please login to access your profile
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="p-4 text-center text-red-600 dark:text-red-400">
+          Please login to access your profile
+        </div>
       </div>
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      {error && <div className="mb-4 p-4 bg-red-50 border border-red-400 text-red-700 rounded">{error}</div>}
-      {success && <div className="mb-4 p-4 bg-green-50 border border-green-400 text-green-700 rounded">{success}</div>}
+      {error && (
+        <div className="mb-4 px-4 py-3 rounded bg-red-50 border border-red-400 text-red-700" role="alert">
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
+      
+      {success && (
+        <div className="mb-4 px-4 py-3 rounded bg-green-50 border border-green-400 text-green-700" role="alert">
+          <span className="block sm:inline">{success}</span>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Doctor Profile</h1>
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Doctor Profile
+            </h1>
+            <div className="flex items-center space-x-4">
+              {formData?.avatar ? (
+                <img
+                  src={formData.avatar}
+                  alt="Profile"
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-2xl font-bold">
+                  {formData?.name?.charAt(0).toUpperCase() || 'D'}
+                </div>
+              )}
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Personal Information Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
                   <User size={16} /> Full Name
@@ -200,7 +241,7 @@ const DoctorProfile = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
               </div>
 
@@ -213,21 +254,21 @@ const DoctorProfile = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   disabled
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white bg-gray-100 dark:bg-gray-600"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
-                  <User size={16} /> Specialization
+                  <Briefcase size={16} /> Specialization
                 </label>
                 <input
                   type="text"
                   name="specialization"
                   value={formData.specialization}
                   onChange={handleChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
               </div>
 
@@ -240,39 +281,38 @@ const DoctorProfile = () => {
                   name="experience"
                   value={formData.experience}
                   onChange={handleChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   min="0"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
-                  <User size={16} /> Qualification
+                  <GraduationCap size={16} /> Qualification
                 </label>
                 <input
                   type="text"
                   name="qualification"
                   value={formData.qualification}
                   onChange={handleChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
-                  <Clock size={16} /> Contact Number
+                  <Phone size={16} /> Contact Number
                 </label>
                 <input
                   type="tel"
                   name="contactNumber"
                   value={formData.contactNumber}
                   onChange={handleChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
               </div>
             </div>
 
-            {/* About Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 About Yourself
@@ -282,11 +322,10 @@ const DoctorProfile = () => {
                 value={formData.about}
                 onChange={handleChange}
                 rows={4}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
 
-            {/* Avatar URL */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Profile Picture URL
@@ -296,11 +335,10 @@ const DoctorProfile = () => {
                 name="avatar"
                 value={formData.avatar}
                 onChange={handleChange}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
 
-            {/* Schedule Editor */}
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Weekly Schedule</h2>
               {formData.schedule.map((scheduleDay) => (
@@ -312,13 +350,13 @@ const DoctorProfile = () => {
                         type="time"
                         value={slot.startTime}
                         onChange={(e) => handleSlotChange(scheduleDay.day, slotIndex, 'startTime', e.target.value)}
-                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="flex-1 px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
                       <input
                         type="time"
                         value={slot.endTime}
                         onChange={(e) => handleSlotChange(scheduleDay.day, slotIndex, 'endTime', e.target.value)}
-                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="flex-1 px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
                       <button
                         type="button"
@@ -343,7 +381,7 @@ const DoctorProfile = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md disabled:opacity-50"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? <LoadingSpinner /> : 'Save Changes'}
             </button>

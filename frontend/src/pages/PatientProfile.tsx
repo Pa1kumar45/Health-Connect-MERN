@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';;
+import { useNavigate } from 'react-router-dom';
+import { User, Mail, Calendar, Phone, Droplet, AlertCircle, Plus, Trash2 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Patient, EmergencyContact } from '../types';
 import { apiService } from '../services/api.service';
 import { useApp } from '../context/AppContext';
 import { authService } from '../services/auth.service';
-import { isAuthenticated } from '../utils/auth';
 
 interface PatientFormData {
   name: string;
@@ -13,7 +13,7 @@ interface PatientFormData {
   avatar: string;
   dateOfBirth: string;
   gender: 'male' | 'female' | '';
-  role:string,
+  role: string;
   bloodGroup: string;
   allergies: string;
   contactNumber: string;
@@ -29,57 +29,52 @@ const PatientProfile = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [formData, setFormData] = useState<PatientFormData | null>({
-    name:  '',
-    email:'',
+    name: '',
+    email: '',
     avatar: '',
     dateOfBirth: '',
-    role:'patient',
+    role: 'patient',
     gender: '',
-    bloodGroup:  '',
+    bloodGroup: '',
     allergies: '',
-    contactNumber:'',
+    contactNumber: '',
     emergencyContact: []
-  }
-    
-    
-  );
+  });
 
   useEffect(() => {
     const fetchPatientProfile = async () => {
       try {
-      
         setIsLoading(true);
         setError(null);
         
-        if(currentUser?.role=='doctor'){
-          return 
+        if(currentUser?.role === 'doctor') {
+          return;
         }
+
         const initialFormData: PatientFormData = {
           name: currentUser?.name || '',
           email: currentUser?.email || '',
           avatar: currentUser?.avatar || '',
           dateOfBirth: currentUser?.dateOfBirth || '',
-          role:currentUser?.role||'patient',
+          role: currentUser?.role || 'patient',
           gender: currentUser?.gender || '',
           bloodGroup: currentUser?.bloodGroup || '',
           allergies: currentUser?.allergies || '',
           contactNumber: currentUser?.contactNumber || '',
           emergencyContact: currentUser?.emergencyContact || []
         };
-        console.log("initialformdata",initialFormData)
-        setFormData({...formData,...initialFormData});
-        console.log("current user after useeffect",currentUser)
-        console.log("formdata after useeffect",formData)
-      } catch (err) {
-        console.log('Failed to load profile:', err);
         
+        setFormData(initialFormData);
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+        setError('Failed to load profile');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPatientProfile();
-  }, [navigate, setCurrentUser]);
+  }, [currentUser]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (!formData) return;
@@ -89,7 +84,6 @@ const PatientProfile = () => {
       ...prev!,
       [name]: value
     }));
-   
   };
 
   const handleEmergencyContactChange = (index: number, field: keyof EmergencyContact, value: string) => {
@@ -105,9 +99,6 @@ const PatientProfile = () => {
       ...prev!,
       emergencyContact: updatedContacts
     }));
-  
-    // console.log("updated emergency contact",formData.emergencyContact)
-    // console.log("updated emergency contact",)
   };
 
   const addEmergencyContact = () => {
@@ -120,7 +111,6 @@ const PatientProfile = () => {
         { name: '', relationship: '', phone: '' }
       ]
     }));
-    
   };
 
   const removeEmergencyContact = (index: number) => {
@@ -130,7 +120,6 @@ const PatientProfile = () => {
       ...prev!,
       emergencyContact: prev!.emergencyContact.filter((_, i) => i !== index)
     }));
-   
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,18 +131,38 @@ const PatientProfile = () => {
       setError(null);
       setSuccess(null);
 
-      console.log("data which is sent to the backend",currentUser)
+      // Create a new object with all the form data
+      const submitData = {
+        ...currentUser,
+        ...formData,
+        emergencyContact: formData.emergencyContact
+      };
 
-      const updatedData = await apiService.updatePatientProfile({ ...currentUser,...formData
-       }as Patient);
-      console.log("updatedData",updatedData)
+      const UpdatedData = await apiService.updatePatientProfile(submitData as Patient);
+      const updatedData=UpdatedData.data;
       
-      setCurrentUser(updatedData.data);
-    //   localStorage.setItem('user', JSON.stringify(updatedData));
+      // Update both currentUser and formData with the complete data
+      setCurrentUser(UpdatedData.data);
+      
+      // Create a new form data object with all required fields
+      const newFormData: PatientFormData = {
+        name: updatedData.name || '',
+        email: updatedData.email || '',
+        avatar: updatedData.avatar || '',
+        dateOfBirth: updatedData.dateOfBirth || '',
+        role: updatedData.role || 'patient',
+        gender: updatedData.gender || '',
+        bloodGroup: updatedData.bloodGroup || '',
+        allergies: updatedData.allergies || '',
+        contactNumber: updatedData.contactNumber || '',
+        emergencyContact: formData.emergencyContact // Preserve the current emergency contacts
+      };
+      
+      setFormData(newFormData);
       setSuccess('Profile updated successfully!');
     } catch (err) {
-      console.log('Failed to update profile:', err);
-      
+      console.error('Failed to update profile:', err);
+      setError('Failed to update profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -194,60 +203,76 @@ const PatientProfile = () => {
       
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Patient Profile
-          </h1>
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Patient Profile
+            </h1>
+            <div className="flex items-center space-x-4">
+              {formData?.avatar ? (
+                <img
+                  src={formData.avatar}
+                  alt="Profile"
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-2xl font-bold">
+                  {formData?.name?.charAt(0).toUpperCase() || 'P'}
+                </div>
+              )}
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Name
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                  <User size={16} /> Full Name
                 </label>
                 <input
                   type="text"
                   name="name"
                   value={formData?.name}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                  <Mail size={16} /> Email
                 </label>
                 <input
                   type="email"
                   name="email"
                   value={formData?.email}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  disabled
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white bg-gray-100 dark:bg-gray-600"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Date of Birth
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                  <Calendar size={16} /> Date of Birth
                 </label>
                 <input
                   type="date"
                   name="dateOfBirth"
                   value={formData?.dateOfBirth}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Gender
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                  <User size={16} /> Gender
                 </label>
                 <select
                   name="gender"
                   value={formData?.gender}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
                   <option value="">Select Gender</option>
                   <option value="male">Male</option>
@@ -256,62 +281,85 @@ const PatientProfile = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Blood Group
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                  <Droplet size={16} /> Blood Group
                 </label>
-                <input
-                  type="text"
+                <select
                   name="bloodGroup"
                   value={formData?.bloodGroup}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  <option value="">Select Blood Group</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Contact Number
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                  <Phone size={16} /> Contact Number
                 </label>
                 <input
                   type="tel"
                   name="contactNumber"
                   value={formData?.contactNumber}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                  <AlertCircle size={16} /> Allergies
+                </label>
+                <input
+                  type="text"
+                  name="allergies"
+                  value={formData?.allergies}
+                  onChange={handleChange}
+                  placeholder="Enter allergies (if any)"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                  <User size={16} /> Profile Picture URL
+                </label>
+                <input
+                  type="url"
+                  name="avatar"
+                  value={formData?.avatar}
+                  onChange={handleChange}
+                  placeholder="Enter image URL"
+                  className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Allergies
-              </label>
-              <input
-                type="text"
-                name="allergies"
-                value={formData?.allergies}
-                onChange={handleChange}
-                placeholder="Enter allergies (if any)"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              />
-            </div>
-
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                  Emergency Contacts
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                  <Phone size={16} /> Emergency Contacts
                 </h3>
                 <button
                   type="button"
                   onClick={addEmergencyContact}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 flex items-center gap-2"
                 >
-                  Add Contact
+                  <Plus size={16} /> Add Contact
                 </button>
               </div>
 
               {formData?.emergencyContact.map((contact, index) => (
-                <div key={index} className="p-4 border rounded-md space-y-4">
+                <div key={index} className="p-4 border rounded-md space-y-4 bg-gray-50 dark:bg-gray-700">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -321,7 +369,7 @@ const PatientProfile = () => {
                         type="text"
                         value={contact.name}
                         onChange={(e) => handleEmergencyContactChange(index, 'name', e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
                     </div>
                     <div>
@@ -332,7 +380,7 @@ const PatientProfile = () => {
                         type="text"
                         value={contact.relationship}
                         onChange={(e) => handleEmergencyContactChange(index, 'relationship', e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
                     </div>
                     <div>
@@ -343,16 +391,16 @@ const PatientProfile = () => {
                         type="tel"
                         value={contact.phone}
                         onChange={(e) => handleEmergencyContactChange(index, 'phone', e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="w-full px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => removeEmergencyContact(index)}
-                    className="mt-2 px-3 py-1 text-sm text-red-600 hover:text-red-800"
+                    className="mt-2 px-3 py-1 text-sm text-red-600 hover:text-red-800 flex items-center gap-1"
                   >
-                    Remove
+                    <Trash2 size={16} /> Remove
                   </button>
                 </div>
               ))}
