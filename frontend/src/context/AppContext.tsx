@@ -74,8 +74,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
      const id = response.data.data._id;
       connectSocket(id);
 
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      throw error;
     }
   }
 

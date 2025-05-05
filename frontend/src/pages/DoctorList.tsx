@@ -47,6 +47,24 @@ const DoctorList = () => {
     return matchesSearch && matchesSpecialization && matchesExperience;
   });
 
+  const getAvatarUrl = (doctor: Doctor) => {
+    if (doctor.avatar) return doctor.avatar;
+    
+    // Generate a color based on the first letter of the name
+    const colors = [
+      'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500',
+      'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500'
+    ];
+    const colorIndex = doctor.name.charCodeAt(0) % colors.length;
+    const color = colors[colorIndex];
+    
+    return (
+      <div className={`w-16 h-16 rounded-full ${color} flex items-center justify-center text-white text-2xl font-bold`}>
+        {doctor.name.charAt(0).toUpperCase()}
+      </div>
+    );
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -107,7 +125,7 @@ const DoctorList = () => {
               ))}
             </select>
           </div>
-
+{/* 
           <div>
             <label className="block text-sm font-medium mb-2 dark:text-gray-300">Minimum Rating</label>
             <select
@@ -124,7 +142,7 @@ const DoctorList = () => {
               <option value={4}>4+ Stars</option>
               <option value={4.5}>4.5+ Stars</option>
             </select>
-          </div>
+          </div> */}
 
           <div>
             <label className="block text-sm font-medium mb-2 dark:text-gray-300">Minimum Experience</label>
@@ -155,11 +173,15 @@ const DoctorList = () => {
               } rounded-lg p-6 hover:shadow-lg transition-shadow`}
             >
               <div className="flex items-center space-x-4">
-                <img
-                  src={doctor.avatar || '/default-avatar.png'}
-                  alt={doctor.name}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
+                {typeof getAvatarUrl(doctor) === 'string' ? (
+                  <img
+                    src={getAvatarUrl(doctor) as string}
+                    alt={doctor.name}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                ) : (
+                  getAvatarUrl(doctor)
+                )}
                 <div>
                   <h2 className="text-xl font-semibold dark:text-white">{doctor.name}</h2>
                   <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -169,11 +191,11 @@ const DoctorList = () => {
               </div>
 
               <div className="mt-4 space-y-2">
-                <div className="flex items-center">
-                  <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                {/* <div className="flex items-center"> */}
+                  {/* <Star className="w-5 h-5 text-yellow-400 fill-current" /> */}
                   {/* <span className="ml-1 dark:text-gray-300">{doctor.rating ? doctor.rating.toFixed(1) : 'No ratings'}</span> */}
-                  <span className="ml-1 dark:text-gray-300">{'No ratings'}</span>
-                </div>
+                  {/* <span className="ml-1 dark:text-gray-300">{'No ratings'}</span> */}
+                {/* </div> */}
                 <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   {doctor.experience} years experience
                 </p>

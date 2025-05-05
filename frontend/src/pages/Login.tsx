@@ -37,9 +37,9 @@ const Login = () => {
        
       await login(formData);
       
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login error:', err);
-      
+      setError(err.response?.data?.message || 'Invalid credentials');
     } finally {
       setIsLoading(false);
     }
