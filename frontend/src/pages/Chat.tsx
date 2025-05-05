@@ -5,6 +5,9 @@ import { axiosInstance } from '../utils/axios';
 import MessageInput from '../components/MessageInput';
 import { useMessage } from '../context/MessageContext';
 import { formatMessageTime } from '../lib/utils';
+import { Video } from 'lucide-react';
+import { useVideoCall } from '../context/VideoCallContext';
+import VideoCall from '../components/VideoCall';
 
 interface User {
     _id: string;
@@ -38,6 +41,7 @@ const Chat = () => {
     const { id } = useParams<{ id: string }>();
     const { currentUser, socket } = useApp();
     const messageContext = useMessage();
+    const { startCall } = useVideoCall();
     
     if (!messageContext) {
         return <div>Loading...</div>;
@@ -102,9 +106,24 @@ const Chat = () => {
         }
     }
 
+    const handleVideoCall = () => {
+        if (id) {
+            startCall(id);
+        }
+    };
+
     return (
         <div className="flex flex-col h-full bg-gray-900 text-gray-100">
             <div className="flex flex-col h-full">
+                <div className="flex justify-end p-2">
+                    <button
+                        onClick={handleVideoCall}
+                        className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                    >
+                        <Video size={20} />
+                    </button>
+                </div>
+
                 <div 
                     ref={chatContainerRef}
                     className="flex-1 overflow-y-auto px-2 py-2 md:px-4 md:py-3"
@@ -203,6 +222,8 @@ const Chat = () => {
                     <MessageInput sendMessage={sendMessage} />
                 </div>
             </div>
+
+            <VideoCall />
         </div>
     );
 };

@@ -7,7 +7,7 @@ import { appointmentService } from '../services/appointment.service';
 import { useApp } from '../context/AppContext';
 import { useVideoCall } from '../context/VideoCallContext';
 
-const DoctorDashboard = () => {
+const Appointments = () => {
     const navigate = useNavigate();
     const { currentUser, setCurrentUser } = useApp();
     const { startCall, isInCall } = useVideoCall();
@@ -24,7 +24,9 @@ const DoctorDashboard = () => {
     const fetchAppointments = async () => {
         try {
             setIsLoading(true);
-            const appointments = await appointmentService.getDoctorAppointments();
+            const appointments = currentUser?.role === 'doctor' 
+                ? await appointmentService.getDoctorAppointments()
+                : await appointmentService.getPatientAppointments();
             
             setPendingAppointments(appointments.filter((app: Appointment) => app.status === 'pending'));
             setActiveAppointments(appointments.filter((app: Appointment) => 
@@ -64,7 +66,7 @@ const DoctorDashboard = () => {
         const isCurrentTime = new Date(`${appointment.date}T${appointment.startTime}`) < new Date() && 
                             new Date(`${appointment.date}T${appointment.endTime}`) > new Date();
         return isCurrentTime && appointment.status === 'scheduled' && 
-               currentUser._id === appointment.doctorId;
+               (currentUser._id === appointment.doctorId || currentUser._id === appointment.patientId);
     };
 
     if (isLoading) return <LoadingSpinner />;
@@ -73,10 +75,10 @@ const DoctorDashboard = () => {
         <div className="max-w-7xl mx-auto p-6">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    Doctor Dashboard
+                    Appointments
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">
-                    Welcome back, Dr. {currentUser?.name}
+                    Manage your appointments
                 </p>
             </div>
 
@@ -273,4 +275,4 @@ const DoctorDashboard = () => {
     );
 };
 
-export default DoctorDashboard;
+export default Appointments; 

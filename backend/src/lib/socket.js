@@ -30,6 +30,35 @@ io.on("connection", (socket) => {
         console.log("Current online users:", Array.from(onlineUsers.entries()));
     }
 
+    // WebRTC signaling handlers
+    socket.on('call-user', (data) => {
+        const receiverSocketId = getSocketId(data.userId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit('call-made', {
+                offer: data.offer,
+                userId: userId
+            });
+        }
+    });
+
+    socket.on('answer-call', (data) => {
+        const receiverSocketId = getSocketId(data.userId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit('call-answered', {
+                answer: data.answer
+            });
+        }
+    });
+
+    socket.on('ice-candidate', (data) => {
+        const receiverSocketId = getSocketId(data.userId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit('ice-candidate', {
+                candidate: data.candidate
+            });
+        }
+    });
+
     socket.on("disconnect", () => {
         console.log("User disconnected:", socket.id);
         // Remove user from online users when they disconnect

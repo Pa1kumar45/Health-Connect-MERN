@@ -88,11 +88,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }
 
   const getCurrentUser = async () => {
-    const response = await axiosInstance('/auth/me');
-    console.log("current me ",response)
-    // const id = response.data.data._id;
-    // connectSocket(id);
-    return response
+    try {
+      const response = await axiosInstance('/auth/me');
+      console.log("current me ", response);
+      if (response.data.data) {
+        setCurrentUser(response.data.data);
+        const id = response.data.data._id;
+        connectSocket(id);
+      }
+      return response;
+    } catch (error) {
+      console.error("Error getting current user:", error);
+      throw error;
+    }
   }
 
   const connectSocket = (id: string) => {
