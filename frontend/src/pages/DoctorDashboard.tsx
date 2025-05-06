@@ -67,6 +67,13 @@ const DoctorDashboard = () => {
                currentUser._id === appointment.doctorId;
     };
 
+    const handleStartCall = (patientId: string) => {
+        if (!isInCall) {
+            startCall(patientId);
+            // Removed navigate('/videocall')
+        }
+    };
+
     if (isLoading) return <LoadingSpinner />;
 
     return (
@@ -125,7 +132,7 @@ const DoctorDashboard = () => {
                                             <div className="flex gap-2">
                                                 {appointment.mode === 'video' && (
                                                     <button 
-                                                        onClick={() => startCall(typeof appointment.patientId === 'object' ? appointment.patientId._id : '')}
+                                                        onClick={() => handleStartCall(typeof appointment.patientId === 'object' ? appointment.patientId._id : '')}
                                                         disabled={isInCall}
                                                         className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                                     >
@@ -246,7 +253,7 @@ const DoctorDashboard = () => {
                                         <div className="flex gap-2">
                                             {appointment.mode === 'video' && (
                                                 <button 
-                                                    onClick={() => startCall(typeof appointment.patientId === 'object' ? appointment.patientId._id : '')}
+                                                    onClick={() => handleStartCall(typeof appointment.patientId === 'object' ? appointment.patientId._id : '')}
                                                     disabled={isInCall}
                                                     className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                                 >

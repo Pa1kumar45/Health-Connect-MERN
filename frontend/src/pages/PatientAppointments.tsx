@@ -8,10 +8,12 @@ import { apiService } from '../services/api.service';
 import { appointmentService } from '../services/appointment.service';
 import { Doctor, Appointment, Patient } from '../types';
 import { doctorService } from '../services/doctor.service';
+import { useVideoCall } from '../context/VideoCallContext';
 
 const PatientAppointments = () => {
   const navigate= useNavigate();
   const {currentUser, setCurrentUser} = useApp();
+  const { startCall, isInCall } = useVideoCall();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,6 +72,13 @@ const PatientAppointments = () => {
   const getDoctor = (doctorId: string) => {
   console.log("doctors hit",doctorId);
     return doctors.find(d => d._id === doctorId);
+  };
+
+  const handleStartCall = (doctorId: string) => {
+    if (!isInCall) {
+        startCall(doctorId);
+        // Removed navigate('/videocall')
+    }
   };
 
   return (
@@ -198,7 +207,7 @@ const PatientAppointments = () => {
                 </div>
                 {appointment.status === 'scheduled'&&filter=='ongoing' && (
                   <div className="mt-4 flex space-x-4">
-                    <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" onClick={() => handleStartCall(doctor?._id)}>
                       <Video className="h-5 w-5 mr-2" />
                       Join Video Call
                     </button>

@@ -3,7 +3,7 @@ import { X, Mic, MicOff, Video, VideoOff } from 'lucide-react';
 import { useVideoCall } from '../context/VideoCallContext';
 
 const VideoCall: React.FC = () => {
-    const { localStream, remoteStream, endCall, callStatus, callerId } = useVideoCall();
+    const { localStream, remoteStream, endCall, callStatus, answerCall } = useVideoCall();
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
     const [isMuted, setIsMuted] = React.useState(false);
@@ -42,18 +42,29 @@ const VideoCall: React.FC = () => {
     if (callStatus === 'idle') return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-4xl h-[80vh] relative">
-                <button
-                    onClick={endCall}
-                    className="absolute top-4 right-4 p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
-                >
-                    <X size={24} />
-                </button>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-                    {/* Local Video */}
-                    <div className="relative bg-gray-900 rounded-lg overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80">
+            <div className="relative w-full max-w-4xl h-[80vh] bg-gray-900 rounded-lg overflow-hidden flex flex-col">
+                {/* Header */}
+                <div className="flex justify-between items-center p-4 bg-gray-800">
+                    <span className="text-white text-lg font-semibold">Video Call</span>
+                    <button
+                        onClick={endCall}
+                        className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+                    >
+                        <X size={24} />
+                    </button>
+                </div>
+                {/* Main Video Area */}
+                <div className="flex-1 relative">
+                    {/* Remote Video (big) */}
+                    <video
+                        ref={remoteVideoRef}
+                        autoPlay
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover bg-black"
+                    />
+                    {/* Local Video (small box) */}
+                    <div className="absolute bottom-6 right-6 w-1/4 max-w-[200px] aspect-video bg-gray-800 rounded-lg overflow-hidden border-2 border-white shadow-lg">
                         <video
                             ref={localVideoRef}
                             autoPlay
@@ -61,27 +72,21 @@ const VideoCall: React.FC = () => {
                             muted
                             className="w-full h-full object-cover"
                         />
-                        <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-                            You
-                        </div>
                     </div>
-
-                    {/* Remote Video */}
-                    <div className="relative bg-gray-900 rounded-lg overflow-hidden">
-                        <video
-                            ref={remoteVideoRef}
-                            autoPlay
-                            playsInline
-                            className="w-full h-full object-cover"
-                        />
-                        <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-                            {callStatus === 'calling' ? 'Calling...' : 'Connected'}
+                    {/* Answer Call Button (if ringing) */}
+                    {callStatus === 'ringing' && (
+                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                            <button
+                                onClick={answerCall}
+                                className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-lg font-semibold shadow-lg"
+                            >
+                                Answer Call
+                            </button>
                         </div>
-                    </div>
+                    )}
                 </div>
-
                 {/* Controls */}
-                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-4">
+                <div className="flex justify-center gap-4 p-4 bg-gray-800">
                     <button
                         onClick={toggleMute}
                         className="p-3 rounded-full bg-gray-700 text-white hover:bg-gray-600 transition-colors"
@@ -106,4 +111,4 @@ const VideoCall: React.FC = () => {
     );
 };
 
-export default VideoCall; 
+export default VideoCall;

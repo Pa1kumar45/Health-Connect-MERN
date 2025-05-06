@@ -28,11 +28,11 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <VideoCallProvider>
-      <Router>
-        <VideoCall />
+    <Router>
+      <VideoCallProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           <Navbar />
+          <VideoCall /> {/* Floating overlay, always available */}
           <Routes>
             <Route path="/" element={<DoctorList />} />
             <Route path="/signup" element={!currentUser ? <SignUp /> : <Navigate to="/" />} />
@@ -59,8 +59,8 @@ const App: React.FC = () => {
             <Route path="/doctor/:id" element={<DoctorPage />} />
           </Routes>
         </div>
-      </Router>
-    </VideoCallProvider>
+      </VideoCallProvider>
+    </Router>
   );
 };
 

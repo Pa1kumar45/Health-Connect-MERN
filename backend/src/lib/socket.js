@@ -21,59 +21,73 @@ const io = new Server(server, {
     pingInterval: 25000
 });
 
-io.on("connection", (socket) => {
-    console.log("User connected:", socket.id);
-    const userId = socket.handshake.query.userId;
-    
-    if (userId) {
-        onlineUsers.set(userId, socket.id);
-        console.log("Current online users:", Array.from(onlineUsers.entries()));
-    }
+const handleSocketConnection = (io) => {
+    const onlineUsers = new Map();
 
-    // WebRTC signaling handlers
-    socket.on('call-user', (data) => {
-        const receiverSocketId = getSocketId(data.userId);
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit('call-made', {
-                offer: data.offer,
-                userId: userId
-            });
+    io.on('connection', (socket) => {
+        console.log('User connected:', socket.id);
+        const userId = socket.handshake.query.userId;
+
+        if (userId) {
+            onlineUsers.set(userId, socket.id);
+            console.log('Online users:', Array.from(onlineUsers.entries()));
         }
-    });
 
-    socket.on('answer-call', (data) => {
-        const receiverSocketId = getSocketId(data.userId);
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit('call-answered', {
-                answer: data.answer
-            });
-        }
-    });
+        socket.on('call-user', (data) => {
+            const receiverSocketId = onlineUsers.get(data.to);
+            console.log('Receiver socket ID [offer]:', receiverSocketId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('call-made', {
+                    offer: data.offer,
+                    from: userId
+                });
+            }
+        });
 
-    socket.on('ice-candidate', (data) => {
-        const receiverSocketId = getSocketId(data.userId);
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit('ice-candidate', {
+        socket.on('answer-call', (data) => {
+            const callerSocketId = onlineUsers.get(data.to);
+            console.log('Caller socket ID [answer]:', callerSocketId);
+            console.log('Answering call:');
+            if (callerSocketId) {
+                io.to(callerSocketId).emit('call-answered', {
+                    answer: data.answer
+                });
+            }
+        });
+
+        socket.on('ice-candidate', (data) => {
+            const receiverSocketId = onlineUsers.get(data.to);
+            // if (receiverSocketId) {
+            //     io.to(receiverSocketId).emit('ice-candidate', {
+            //         candidate: data.candidate
+            //     });
+            // }
+            console.log('ICE candidate:', data.candidate);
+            console.log('Receiver socket ID [ICE candidate]:', receiverSocketId);
+            socket.broadcast.to(receiverSocketId).emit('ice-candidate', {
                 candidate: data.candidate
             });
-        }
-    });
+        });
 
-    socket.on("disconnect", () => {
-        console.log("User disconnected:", socket.id);
-        // Remove user from online users when they disconnect
-        for (const [key, value] of onlineUsers.entries()) {
-            if (value === socket.id) {
-                onlineUsers.delete(key);
-                console.log("Removed user from online users:", key);
-                break;
+        socket.on('call-end', (data) => {
+            const receiverSocketId = onlineUsers.get(data.to);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('call-end');
             }
-        }
-    });
+        });
 
-    socket.on("error", (error) => {
-        console.error("Socket error:", error);
+        socket.on('disconnect', () => {
+            console.log('User disconnected:', socket.id);
+            for (const [key, value] of onlineUsers.entries()) {
+                if (value === socket.id) {
+                    onlineUsers.delete(key);
+                    break;
+                }
+            }
+        });
     });
-});
+};
+
+handleSocketConnection(io);
 
 export {io, app, server};
