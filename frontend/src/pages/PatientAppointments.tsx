@@ -154,11 +154,14 @@ const PatientAppointments = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <img
-                      src={doctor?.avatar}
-                      alt={doctor?.name}
-                      className="h-12 w-12 rounded-full object-cover"
-                    />
+                    {doctor.avatar && (
+                      <img
+                        src={doctor.avatar}
+                        alt={doctor.name}
+                        className="h-12 w-12 rounded-full object-cover"
+                      />
+                    )}
+                   
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Dr. {doctor?.name}

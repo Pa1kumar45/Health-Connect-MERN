@@ -270,6 +270,7 @@ const DoctorPage: React.FC = () => {
                     </label>
                     <input
                       type="time"
+                      
                       value={appointment.endTime}
                       onChange={(e) => setAppointment({...appointment, endTime: e.target.value})}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"

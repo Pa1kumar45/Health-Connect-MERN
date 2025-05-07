@@ -3,7 +3,7 @@ import { X, Mic, MicOff, Video, VideoOff } from 'lucide-react';
 import { useVideoCall } from '../context/VideoCallContext';
 
 const VideoCall: React.FC = () => {
-    const { localStream, remoteStream, endCall, callStatus, answerCall, rejectCall } = useVideoCall();
+    const { localStream, remoteStream, endCall, callStatus, answerCall, rejectCall ,callerId } = useVideoCall();
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
     const [isMuted, setIsMuted] = useState(false);
@@ -78,6 +78,17 @@ const VideoCall: React.FC = () => {
         }
     };
 
+
+    //get the caller details from the context and show it in the header based on callerId
+    const getCallerDetails = () => {
+        // Assuming you have a function to fetch caller details based on callerId
+        // This is just a placeholder, replace with actual implementation
+        return callerId ? `Call from ${callerId}` : 'Incoming Call';
+    }
+
+    
+    
+
     const handleRejectCall = () => {
         rejectCall();  // Reject the call and end the session
     };
@@ -89,7 +100,7 @@ const VideoCall: React.FC = () => {
             <div className="relative w-full max-w-4xl h-[80vh] bg-gray-900 rounded-lg overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 bg-gray-800">
-                    <span className="text-white text-lg font-semibold">Video Call</span>
+                    <span className="text-white text-lg font-semibold">Video Call from </span>
                     <button
                         onClick={endCall}
                         className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
