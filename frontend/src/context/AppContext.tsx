@@ -1,10 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { Doctor, Patient, SignUpFormData } from '../types';
-import { apiService } from '../services/api.service';
 import { axiosInstance } from '../utils/axios';
-import { AuthResponse, LoginCredentials } from '../types';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client';
+import { Doctor, Patient, SignUpFormData, LoginCredentials } from '../types/index';
 
 interface ThemeContextType {
   isDarkMode: boolean;
@@ -19,176 +17,171 @@ interface AppContextType extends ThemeContextType {
   logout: () => void;
   signup: (data: SignUpFormData) => void;
   login: (data: LoginCredentials) => void;
-  getCurrentUser: () => void;
+  getCurrentUser: () => Promise<{ data: { data: any; success: boolean; message: string } }>;
   connectSocket:(id:string)=> void;
   socket:Socket|null;
-  
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const savedTheme = localStorage.getItem('darkMode');
-    return savedTheme ? JSON.parse(savedTheme) : true;
-  });
-
-  const [currentUser, setCurrentUser] = useState<Doctor | Patient | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Apply dark mode class to html element
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
-  }, [isDarkMode]);
-
-  const signup = async (data: SignUpFormData) => {
-    try {
-      console.log("register data", data);
-      const response = await axiosInstance.post('/auth/register', data);
-      console.log("Signup response:", response.data);
-
-     setCurrentUser(response.data.data);
-     const id = response.data.data._id;
-     connectSocket(id);
-    } catch (error) {
-      console.error("Signup error:", error);
-    }
-  };
-
-
-  const login = async (data: LoginCredentials) => {
-    try {
-      console.log("logindata", data);
-      const response = await axiosInstance.post('/auth/login', data);
-      console.log("login responce", response);
-      setCurrentUser(response.data.data);
-      
-     const id = response.data.data._id;
-      connectSocket(id);
-
-    } catch (error: any) {
-      console.log(error);
-      throw error;
-    }
-  }
-
-
-
-  const logout = async () => {
-    setCurrentUser(null);
-    await axiosInstance.post('/auth/logout');
-  }
-
-  const getCurrentUser = async () => {
-    try {
-      const response = await axiosInstance('/auth/me');
-      console.log("current me ", response);
-      if (response.data.data) {
-        setCurrentUser(response.data.data);
-        const id = response.data.data._id;
-        connectSocket(id);
-      }
-      return response;
-    } catch (error) {
-      console.error("Error getting current user:", error);
-      throw error;
-    }
-  }
-
-  const connectSocket = (id: string) => {
-    if (socket?.connected) {
-      console.log('Socket already connected');
-      return;
-    }
-
-    // Disconnect existing socket if any
-    if (socket) {
-      socket.disconnect();
-    }
-
-    const newSocket = io('http://localhost:5000', {
-      query: { userId: id },
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      timeout: 20000
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        const savedTheme = localStorage.getItem('darkMode');
+        return savedTheme ? JSON.parse(savedTheme) : true;
     });
 
-    newSocket.on('connect', () => {
-      console.log('Socket connected successfully');
-    });
+    const [currentUser, setCurrentUser] = useState<Doctor | Patient | null>(null);
+    const [socket, setSocket] = useState<Socket | null>(null);
+    const [isLoading] = useState(false);
+    const [error] = useState<string | null>(null);
 
-    newSocket.on('disconnect', (reason) => {
-      console.log('Socket disconnected:', reason);
-      if (reason === 'io server disconnect') {
-        // Server initiated disconnect, try to reconnect
-        newSocket.connect();
-      }
-    });
+    // Apply dark mode class to html element
+    useEffect(() => {
+        if (isDarkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+    }, [isDarkMode]);
 
-    newSocket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
-    });
+    const signup = async (data: SignUpFormData) => {
+        try {
+            console.log("register data", data);
+            const response = await axiosInstance.post('/auth/register', data);
+            console.log("Signup response:", response.data);
 
-    newSocket.on('error', (error) => {
-      console.error('Socket error:', error);
-    });
-
-    setSocket(newSocket);
-  };
-
-  // Cleanup socket on unmount
-  useEffect(() => {
-    return () => {
-      if (socket) {
-        socket.disconnect();
-      }
+            setCurrentUser(response.data.data);
+            const id = response.data.data._id;
+            connectSocket(id);
+        } catch (error) {
+            console.error("Signup error:", error);
+        }
     };
-  }, [socket]);
 
-  const toggleDarkMode = useCallback(() => {
-    setIsDarkMode((prev: boolean) => !prev);
-  }, []);
+    const login = async (data: LoginCredentials) => {
+        try {
+            console.log("logindata", data);
+            const response = await axiosInstance.post('/auth/login', data);
+            console.log("login responce", response);
+            setCurrentUser(response.data.data);
 
-  return (
-    <AppContext.Provider
-      value={{
-        isDarkMode,
-        toggleDarkMode,
-        currentUser,
-        setCurrentUser,
-        isLoading,
-        error,
-        logout,
-        signup,
-        login,
-        getCurrentUser,
-        connectSocket,
-        socket
-      }}
-    >
-      {children}
-    </AppContext.Provider>
-  );
+            const id = response.data.data._id;
+            connectSocket(id);
+
+        } catch (error: any) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    const logout = async () => {
+        setCurrentUser(null);
+        await axiosInstance.post('/auth/logout');
+    }
+
+    const getCurrentUser = async () => {
+        try {
+            const response = await axiosInstance('/auth/me');
+            console.log("current me ", response);
+            if (response.data.data) {
+                setCurrentUser(response.data.data);
+                const id = response.data.data._id;
+                connectSocket(id);
+            }
+            return response;
+        } catch (error) {
+            console.error("Error getting current user:", error);
+            throw error;
+        }
+    }
+
+    const connectSocket = (id: string) => {
+        if (socket?.connected) {
+            console.log('Socket already connected');
+            return;
+        }
+
+        // Disconnect existing socket if any
+        if (socket) {
+            socket.disconnect();
+        }
+
+        const newSocket = io('http://localhost:5000', {
+            query: { userId: id },
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            timeout: 20000
+        });
+
+        newSocket.on('connect', () => {
+            console.log('Socket connected successfully');
+        });
+
+        newSocket.on('disconnect', (reason) => {
+            console.log('Socket disconnected:', reason);
+            if (reason === 'io server disconnect') {
+                // Server initiated disconnect, try to reconnect
+                newSocket.connect();
+            }
+        });
+
+        newSocket.on('connect_error', (error) => {
+            console.error('Socket connection error:', error);
+        });
+
+        newSocket.on('error', (error) => {
+            console.error('Socket error:', error);
+        });
+
+        setSocket(newSocket);
+    };
+
+    // Cleanup socket on unmount
+    useEffect(() => {
+        return () => {
+            if (socket) {
+                socket.disconnect();
+            }
+        };
+    }, [socket]);
+
+    const toggleDarkMode = useCallback(() => {
+        setIsDarkMode((prev: boolean) => !prev);
+    }, []);
+
+    return (
+        <AppContext.Provider
+            value={{
+                isDarkMode,
+                toggleDarkMode,
+                currentUser,
+                setCurrentUser,
+                isLoading,
+                error,
+                logout,
+                signup,
+                login,
+                getCurrentUser,
+                connectSocket,
+                socket
+            }}
+        >
+            {children}
+        </AppContext.Provider>
+    );
 };
 
 export const useApp = () => {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useApp must be used within an AppProvider');
-  }
-  return context;
+    const context = useContext(AppContext);
+    if (context === undefined) {
+        throw new Error('useApp must be used within an AppProvider');
+    }
+    return context;
 };
 
 export const useTheme = () => {
-  const { isDarkMode, toggleDarkMode } = useApp();
-  return { isDarkMode, toggleDarkMode };
+    const { isDarkMode, toggleDarkMode } = useApp();
+    return { isDarkMode, toggleDarkMode };
 };

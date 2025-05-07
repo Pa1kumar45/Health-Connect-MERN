@@ -1,21 +1,20 @@
-export interface Patient{
+export interface Patient {
   _id: string;
   name: string;
   email: string;
-  password: string;
-  dateOfBirth?: string;
-  gender?: 'male' | 'female'|'';
-  // medicalHistory?: MedicalHistory[];
-  allergies?:string;
-  contactNumber?:string;
-  emergencyContact?:EmergencyContact[];
-  bloodGroup?: string;
   role: 'patient';
   avatar?: string;
-  createdAt: string;
-  updatedAt: string;
-  __v:number
-  // profileCompleted:boolean;
+  profileCompleted: boolean;
+  contactNumber?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  bloodGroup?: string;
+  allergies?: string;
+  emergencyContact?: Array<{
+    name: string;
+    relationship: string;
+    contactNumber: string;
+  }>;
 }
 
 export interface SignUpFormData {
@@ -23,33 +22,30 @@ export interface SignUpFormData {
   email: string;
   password: string;
   role: 'doctor' | 'patient';
-  specialization?: string;
-  qualification?: string;
-  experience?: number;
 }
 
-export interface EmergencyContact{
-  name:string;
-  relationship:string;
-  phone:string;
+export interface EmergencyContact {
+  name: string;
+  relationship: string;
+  phone: string;
 }
 
-export interface Doctor{
+export interface Doctor {
   _id: string;
   name: string;
   email: string;
-  password: string;
-  specialization: string;
-  experience: number;
-  qualification: string;
-  about: string;
-  contactNumber:string;
-  avatar?: string;
-  schedule: Schedule[];
   role: 'doctor';
-  createdAt: string;
-  updatedAt: string;
-  __v:number
+  avatar?: string;
+  specialization?: string;
+  experience?: number;
+  qualifications?: string[];
+  availability?: Schedule[];
+  bio?: string;
+  contactNumber?: string;
+  fees?: number;
+  rating?: number;
+  reviews?: number;
+  profileCompleted: boolean;
 }
 
 export interface MedicalHistory {
@@ -65,14 +61,14 @@ export interface Appointment {
   patientId?: string;
   date: string;
   startTime: string;
-  endTime:string;
+  endTime: string;
   status: 'pending' | 'scheduled' | 'cancelled' | 'completed' | 'rescheduled';
   mode: 'video' | 'chat';
-  reason?: string;//bypatient while booking 
-  comment?:string;//for doctor while conforming booking
+  reason?: string; //bypatient while booking
+  comment?: string; //for doctor while conforming booking
   notes?: string; //for doctor after the session
-  rating?:number;
-  review?:string; //by patient
+  rating?: number;
+  review?: string; //by patient
 }
 
 // export interface Review {
@@ -83,7 +79,6 @@ export interface Appointment {
 //   comment: string;
 //   date: string;
 // }
-
 
 export interface Slot {
   slotNumber: number;
@@ -98,12 +93,14 @@ export interface Schedule {
   slots: Slot[];
 }
 
-
 export interface Message {
-  id: string;
+  _id: string;
   senderId: string;
-  receiverId: string;
-  content: string;
+  recipientId: string;
+  text?: string;
+  content?: string;
+  createdAt: string;
+  image?: string;
   timestamp: string;
   type: 'text' | 'image';
   read: boolean;
@@ -116,10 +113,9 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  success:boolean;
-  message:string;
-    data: Doctor | Patient;
-  
+  success: boolean;
+  message: string;
+  data: Doctor | Patient;
 }
 
 export interface MedicalRecord {

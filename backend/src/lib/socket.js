@@ -33,6 +33,16 @@ const handleSocketConnection = (io) => {
             console.log('Online users:', Array.from(onlineUsers.entries()));
         }
 
+        // Add message handling
+        socket.on('newMessage', (message) => {
+            const receiverSocketId = onlineUsers.get(message.recipientId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('newMessage', message);
+            }
+            // Emit to sender as well to confirm message was sent
+            socket.emit('newMessage', message);
+        });
+
         socket.on('call-user', (data) => {
             const receiverSocketId = onlineUsers.get(data.to);
             console.log('Receiver socket ID [offer]:', receiverSocketId);

@@ -1,91 +1,29 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useApp } from '../context/AppContext';
-import { axiosInstance } from '../utils/axios';
-import MessageInput from '../components/MessageInput';
 import { useMessage } from '../context/MessageContext';
 import { formatMessageTime } from '../lib/utils';
 import { Video } from 'lucide-react';
 import { useVideoCall } from '../context/VideoCallContext';
 import VideoCall from '../components/VideoCall';
-
-interface User {
-    _id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-    role: string;
-    profileCompleted: boolean;
-    contactNumber?: string;
-    dateOfBirth?: string;
-    gender?: string;
-    bloodGroup?: string;
-    allergies?: string;
-    emergencyContact?: Array<{
-        name: string;
-        relationship: string;
-        contactNumber: string;
-    }>;
-}
-
-interface Message {
-    _id: string;
-    senderId: string;
-    receiverId: string;
-    text?: string;
-    image?: string;
-    createdAt: string;
-}
+import MessageInput from '../components/MessageInput';
+import { Message } from '../types/index';
 
 const Chat = () => {
     const { id } = useParams<{ id: string }>();
-    const { currentUser, socket } = useApp();
-    const messageContext = useMessage();
+    const { currentUser } = useApp();
+    const { fetchMessages, messages, getSelectedUser, selectedUser, sendMessage } = useMessage();
     const { startCall } = useVideoCall();
-    
-    if (!messageContext) {
-        return <div>Loading...</div>;
-    }
-    
-    const { fetchMessages, messages, getSelectedUser, selectedUser, setMessages } = messageContext;
     
     const messageEndRef = useRef<HTMLDivElement>(null);
     const chatContainerRef = useRef<HTMLDivElement>(null);
     
     useEffect(() => {
         if (id) {
-            fetchMessages_data(id);
+            fetchMessages(id);
+            getSelectedUser(id);
         }
-    }, [id]);
-
-    const fetchMessages_data = async (id: string) => {
-        try {
-            await fetchMessages(id);
-            await getSelectedUser(id);
-        } catch (error) {
-            console.error("Error fetching chat data:", error);
-        }
-    }
-    
-    useEffect(() => {
-        if (!socket) return;
-
-        const handleNewMessage = (newMessage: Message) => {
-            console.log("New message received:", newMessage);
-            if (newMessage.receiverId === currentUser?._id) {
-                setMessages(prevMessages => {
-                    if (!prevMessages) return [newMessage];
-                    return [...prevMessages, newMessage];
-                });
-            }
-        };
-
-        socket.on("newMessage", handleNewMessage);
-
-        return () => {
-            socket.off("newMessage", handleNewMessage);
-        };
-    }, [socket, currentUser?._id, setMessages]);
+    }, [id, fetchMessages, getSelectedUser]);
 
     useEffect(() => {
         if (messageEndRef.current && messages && messages.length > 0) {
@@ -93,24 +31,24 @@ const Chat = () => {
         }
     }, [messages]);
 
-    const sendMessage = async (data: { text?: string; image?: string }) => {
-        try {
-            const response = await axiosInstance.post(`/message/send/${id}`, data);
-            console.log("Message sent:", response.data.newMessage);
-            setMessages(prevMessages => {
-                if (!prevMessages) return [response.data.newMessage];
-                return [...prevMessages, response.data.newMessage];
-            });
-        } catch (error) {
-            console.error("Error sending message:", error);
-        }
-    }
-
     const handleVideoCall = () => {
         if (id) {
             startCall(id);
         }
     };
+
+    const handleSendMessage = async (data: { text?: string; image?: string }) => {
+        if (!id) return;
+        try {
+            await sendMessage(id, data.text || '', data.image ? 'image' : 'text');
+        } catch (error) {
+            console.error("Error sending message:", error);
+        }
+    }
+
+    if (!currentUser || !id) {
+        return <div className="flex items-center justify-center h-full text-gray-400">Loading...</div>;
+    }
 
     return (
         <div className="flex flex-col h-full bg-gray-900 text-gray-100">
@@ -128,9 +66,9 @@ const Chat = () => {
                     ref={chatContainerRef}
                     className="flex-1 overflow-y-auto px-2 py-2 md:px-4 md:py-3"
                 >
-                    {messages?.length > 0 ? (
+                    {Array.isArray(messages) && messages.length > 0 ? (
                         <div className="space-y-3 pb-1">
-                            {messages.map((message: Message, index: number) => {
+                            {messages?.map((message: Message, index) => {
                                 const isCurrentUser = message.senderId === currentUser?._id;
                                 const isLastMessage = index === messages.length - 1;
                                 
@@ -164,7 +102,7 @@ const Chat = () => {
                                                     {isCurrentUser ? currentUser.name : selectedUser?.name || "User"}
                                                 </span>
                                                 <time className="text-xs text-gray-400">
-                                                    {formatMessageTime(message.createdAt)}
+                                                    {formatMessageTime(message.timestamp)}
                                                 </time>
                                             </div>
                                             
@@ -173,7 +111,7 @@ const Chat = () => {
                                                     ? "bg-blue-600 text-white rounded-tr-none" 
                                                     : "bg-gray-700 text-white rounded-tl-none"
                                             }`}>
-                                                {message.image && (
+                                                {message.type === 'image' && message.image && (
                                                     <div className="mb-2">
                                                         <img
                                                             src={message.image}
@@ -219,7 +157,7 @@ const Chat = () => {
                 </div>
 
                 <div className="mt-auto border-t border-gray-800">
-                    <MessageInput sendMessage={sendMessage} />
+                    <MessageInput sendMessage={handleSendMessage} />
                 </div>
             </div>
 
