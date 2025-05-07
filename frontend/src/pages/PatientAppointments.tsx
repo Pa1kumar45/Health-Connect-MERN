@@ -187,34 +187,52 @@ const PatientAppointments = () => {
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-4">
-
-                <div className="flex items-center text-gray-600 dark:text-gray-400">
-                    <Clock className="h-5 w-5 mr-2" />
-                    <span>{appointment.startTime}</span>
-                  </div>
-
-                <div className="flex items-center text-gray-600 dark:text-gray-400">
-                    <Clock className="h-5 w-5 mr-2" />
-                    <span>{appointment.startTime}</span>
-                  </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <Calendar className="h-5 w-5 mr-2" />
-                    {/* <span>{format(new Date(appointment.date), 'MMMM d, yyyy')}</span> */}
-                    <span>{(appointment.date)}</span>
+                    <span>{new Date(appointment.date).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
+                    <Clock className="h-5 w-5 mr-2" />
+                    <span>{appointment.startTime} - {appointment.endTime}</span>
                   </div>
                   
-                 
+                  {appointment.comment && (
+                    <div className="col-span-2 flex items-start text-gray-600 dark:text-gray-400">
+                      <span className="font-medium mr-2">Comment:</span>
+                      <span>{appointment.comment}</span>
+                    </div>
+                  )}
+                  
+                  {appointment.reason && (
+                    <div className="col-span-2 flex items-start text-gray-600 dark:text-gray-400">
+                      <span className="font-medium mr-2">Reason:</span>
+                      <span>{appointment.reason}</span>
+                    </div>
+                  )}
                 </div>
                 {appointment.status === 'scheduled'&&filter=='ongoing' && (
                   <div className="mt-4 flex space-x-4">
-                    <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" onClick={() => handleStartCall(doctor?._id)}>
+
+                    {/* fi the appointment is chat only chat buttion */}
+                    {appointment.mode === 'chat' ? (
+                      <button className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700" onClick={()=>navigate(`/chat/${doctor?._id}`)}>
+                        <MessageCircle className="h-5 w-5 mr-2" />
+                        Message
+                      </button>
+                    ) : (
+                      <>
+                      <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" onClick={() => handleStartCall(doctor?._id)}>
                       <Video className="h-5 w-5 mr-2" />
-                      Join Video Call
+                     Video 
                     </button>
-                    <button className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700" onClick={()=>navigate(`/chat/${doctor?._id}`)}>
-                      <MessageCircle className="h-5 w-5 mr-2" />
-                      Send Message
-                    </button>
+                      <button className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700" onClick={()=>navigate(`/chat/${doctor?._id}`)}>
+                        <MessageCircle className="h-5 w-5 mr-2" />
+                        Message
+                      </button>
+                      </>
+                    )}
+                    
+                   
                   </div>
                 )}
               </div>
