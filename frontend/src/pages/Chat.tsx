@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useApp } from '../context/AppContext';
 import { useMessage } from '../context/MessageContext';
@@ -17,19 +17,60 @@ const Chat = () => {
     
     const messageEndRef = useRef<HTMLDivElement>(null);
     const chatContainerRef = useRef<HTMLDivElement>(null);
+    const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
     
+    // Fetch initial messages and user data
     useEffect(() => {
         if (id) {
-            fetchMessages(id);
-            getSelectedUser(id);
+            const loadChatData = async () => {
+                try {
+                    await Promise.all([
+                        fetchMessages(id),
+                        getSelectedUser(id)
+                    ]);
+                } catch (error) {
+                    console.error("Error loading chat data:", error);
+                }
+            };
+            loadChatData();
         }
     }, [id, fetchMessages, getSelectedUser]);
 
+    // Handle scrolling
     useEffect(() => {
-        if (messageEndRef.current && messages && messages.length > 0) {
+        const container = chatContainerRef.current;
+        if (!container) return;
+
+        const handleScroll = () => {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 10;
+            setIsAutoScrollEnabled(isAtBottom);
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Auto-scroll to bottom only when enabled
+    useEffect(() => {
+        if (isAutoScrollEnabled && messageEndRef.current) {
             messageEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
-    }, [messages]);
+    }, [messages, isAutoScrollEnabled]);
+
+    const handleSendMessage = async (data: { text?: string; image?: string }) => {
+        if (!id || (!data.text && !data.image)) return;
+        
+        try {
+            if (data.image) {
+                await sendMessage(id, data.image, 'image');
+            } else if (data.text) {
+                await sendMessage(id, data.text.trim(), 'text');
+            }
+        } catch (error) {
+            console.error("Error sending message:", error);
+        }
+    };
 
     const handleVideoCall = () => {
         if (id) {
@@ -37,40 +78,27 @@ const Chat = () => {
         }
     };
 
-    const handleSendMessage = async (data: { text?: string; image?: string }) => {
-        if (!id) return;
-        try {
-            await sendMessage(id, data.text || '', data.image ? 'image' : 'text');
-        } catch (error) {
-            console.error("Error sending message:", error);
-        }
-    }
-
-    if (!currentUser || !id) {
-        return <div className="flex items-center justify-center h-full text-gray-400">Loading...</div>;
-    }
-
     return (
-        <div className="flex flex-col h-full bg-gray-900 text-gray-100">
+        <div className="flex flex-col h-screen max-h-screen bg-gray-900 text-gray-100">
             <div className="flex flex-col h-full">
-                <div className="flex justify-end p-2">
-                    <button
+                <div className="flex-none flex justify-end p-2 border-b border-gray-800">
+                    {/* <button
                         onClick={handleVideoCall}
                         className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                     >
                         <Video size={20} />
-                    </button>
+                    </button> */}
                 </div>
 
                 <div 
                     ref={chatContainerRef}
-                    className="flex-1 overflow-y-auto px-2 py-2 md:px-4 md:py-3"
+                    className="flex-1 min-h-0 overflow-y-auto px-2 py-2 md:px-4 md:py-3 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900"
                 >
                     {Array.isArray(messages) && messages.length > 0 ? (
                         <div className="space-y-3 pb-1">
                             {messages?.map((message: Message, index) => {
                                 const isCurrentUser = message.senderId === currentUser?._id;
-                                const isLastMessage = index === messages.length - 1;
+                                const isLastMessage = index === (messages?.length ?? 0) - 1;
                                 
                                 return (
                                     <div
@@ -102,7 +130,7 @@ const Chat = () => {
                                                     {isCurrentUser ? currentUser.name : selectedUser?.name || "User"}
                                                 </span>
                                                 <time className="text-xs text-gray-400">
-                                                    {formatMessageTime(message.timestamp)}
+                                                    {formatMessageTime(message.createdAt)}
                                                 </time>
                                             </div>
                                             
@@ -111,7 +139,7 @@ const Chat = () => {
                                                     ? "bg-blue-600 text-white rounded-tr-none" 
                                                     : "bg-gray-700 text-white rounded-tl-none"
                                             }`}>
-                                                {message.type === 'image' && message.image && (
+                                                {message.image && (
                                                     <div className="mb-2">
                                                         <img
                                                             src={message.image}
@@ -156,7 +184,7 @@ const Chat = () => {
                     )}
                 </div>
 
-                <div className="mt-auto border-t border-gray-800">
+                <div className="flex-none border-t border-gray-800">
                     <MessageInput sendMessage={handleSendMessage} />
                 </div>
             </div>

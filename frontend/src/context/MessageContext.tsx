@@ -1,6 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { axiosInstance } from "../utils/axios";
-import { Doctor, Message, Patient } from "../types";
+import { Doctor, Message, Patient } from "../types/index";
 import { useApp } from "./AppContext";
 
 interface MessageContextType {
@@ -42,26 +42,23 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const sendMessage = async (recipientId: string, content: string, type: 'text' | 'image' = 'text') => {
         if (!socket || !currentUser) return;
 
-        const message = {
-            senderId: currentUser._id,
-            recipientId,
-            text: content,
-            timestamp: new Date().toISOString(),
-            type
-        };
-
         try {
-            // Emit to socket first for real-time update
-            socket.emit('newMessage', message);
-            
-            // Then save to database
-            await axiosInstance.post(`/message/send/${recipientId}`, {
+            // First save to database
+            const response = await axiosInstance.post(`/message/send/${recipientId}`, {
                 text: content,
                 type
             });
 
+            const newMessage = response.data.newMessage;
+
+            // Then emit to socket for real-time update
+            socket.emit('newMessage', {
+                ...newMessage,
+                receiverId: recipientId
+            });
+
             // Update local state
-            setMessages(prev => prev ? [...prev, message] : [message]);
+            setMessages(prev => prev ? [...prev, newMessage] : [newMessage]);
         } catch (error) {
             console.error("Error sending message:", error);
             throw error;
@@ -70,11 +67,20 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     // Listen for new messages
     useEffect(() => {
-        if (!socket || !currentUser) return;
+        if (!socket || !currentUser || !selectedUser) return;
 
         const handleNewMessage = (message: Message) => {
-            if (message.senderId === selectedUser?._id || message.recipientId === selectedUser?._id) {
-                setMessages(prev => prev ? [...prev, message] : [message]);
+            // Only update if message is part of current conversation
+            if ((message.senderId === selectedUser._id && message.recipientId === currentUser._id) ||
+                (message.senderId === currentUser._id && message.recipientId === selectedUser._id)) {
+                console.log('Received message:', message);
+                setMessages(prev => {
+                    // Avoid duplicate messages
+                    if (prev?.some(m => m._id === message._id)) {
+                        return prev;
+                    }
+                    return prev ? [...prev, message] : [message];
+                });
             }
         };
 

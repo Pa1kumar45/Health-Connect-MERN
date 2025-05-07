@@ -22,8 +22,6 @@ const io = new Server(server, {
 });
 
 const handleSocketConnection = (io) => {
-    const onlineUsers = new Map();
-
     io.on('connection', (socket) => {
         console.log('User connected:', socket.id);
         const userId = socket.handshake.query.userId;
@@ -33,14 +31,12 @@ const handleSocketConnection = (io) => {
             console.log('Online users:', Array.from(onlineUsers.entries()));
         }
 
-        // Add message handling
         socket.on('newMessage', (message) => {
-            const receiverSocketId = onlineUsers.get(message.recipientId);
+            console.log('New message received:', message);
+            const receiverSocketId = onlineUsers.get(message.receiverId);
             if (receiverSocketId) {
                 io.to(receiverSocketId).emit('newMessage', message);
             }
-            // Emit to sender as well to confirm message was sent
-            socket.emit('newMessage', message);
         });
 
         socket.on('call-user', (data) => {
@@ -98,6 +94,7 @@ const handleSocketConnection = (io) => {
                     break;
                 }
             }
+            console.log('Updated online users:', Array.from(onlineUsers.entries()));
         });
     });
 };
