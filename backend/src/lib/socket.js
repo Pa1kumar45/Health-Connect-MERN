@@ -48,7 +48,7 @@ const handleSocketConnection = (io) => {
             const callerSocketId = onlineUsers.get(data.to);
             console.log('Caller socket ID [answer]:', callerSocketId);
             if (callerSocketId) {
-            console.log('Answering call:');
+                console.log('Answering call with SDP answer');
                 io.to(callerSocketId).emit('call-answered', {
                     answer: data.answer
                 });
@@ -57,16 +57,20 @@ const handleSocketConnection = (io) => {
 
         socket.on('ice-candidate', (data) => {
             const receiverSocketId = onlineUsers.get(data.to);
-            // if (receiverSocketId) {
-            //     io.to(receiverSocketId).emit('ice-candidate', {
-            //         candidate: data.candidate
-            //     });
-            // }
-            console.log('ICE candidate:', data.candidate);
-            console.log('Receiver socket ID [ICE candidate]:', receiverSocketId);
-            socket.broadcast.emit('ice-candidate', {
-                candidate: data.candidate
-            });
+            console.log('ICE candidate received');
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('ice-candidate', {
+                    candidate: data.candidate,
+                    from: userId
+                });
+            }
+        });
+
+        socket.on('call-rejected', (data) => {
+            const callerSocketId = onlineUsers.get(data.to);
+            if (callerSocketId) {
+                io.to(callerSocketId).emit('call-rejected');
+            }
         });
 
         socket.on('call-end', (data) => {

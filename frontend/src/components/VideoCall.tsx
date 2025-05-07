@@ -3,54 +3,83 @@ import { X, Mic, MicOff, Video, VideoOff } from 'lucide-react';
 import { useVideoCall } from '../context/VideoCallContext';
 
 const VideoCall: React.FC = () => {
-    const { localStream, remoteStream, endCall, callStatus, answerCall } = useVideoCall();
+    const { localStream, remoteStream, endCall, callStatus, answerCall, rejectCall } = useVideoCall();
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOff, setIsVideoOff] = useState(false);
 
+    const isWebRTCSupported = () => {
+        return (
+            navigator.mediaDevices && navigator.mediaDevices.getUserMedia &&
+            typeof RTCPeerConnection !== 'undefined'
+        );
+    };
+
+    const requestMediaPermissions = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            if (localVideoRef.current) {
+                localVideoRef.current.srcObject = stream;
+            }
+        } catch (err) {
+            console.error('Error accessing media devices:', err);
+            alert('Please allow access to your camera and microphone.');
+        }
+    };
+
+    useEffect(() => {
+        if (!isWebRTCSupported()) {
+            alert('WebRTC is not supported by your browser. Please try another browser.');
+            return;
+        }
+        requestMediaPermissions();
+    }, []);
+
     useEffect(() => {
         if (localStream && localVideoRef.current) {
-            localVideoRef.current.srcObject = localStream;
-            console.log('localStream tracks', localStream.getTracks());
-            console.log('localStream video tracks', localStream.getVideoTracks());
-            if (localStream.getVideoTracks().length > 0) {
-                console.log('local video track enabled:', localStream.getVideoTracks()[0].enabled);
+            try {
+                localVideoRef.current.srcObject = localStream;
+            } catch (err) {
+                console.error('Error binding local stream:', err);
             }
         }
-        console.log('localStream', localStream);
-        console.log('localVideoRef', localVideoRef.current);
     }, [localStream]);
 
     useEffect(() => {
+        // Always show the remote stream when available
         if (remoteStream && remoteVideoRef.current) {
-            remoteVideoRef.current.srcObject = remoteStream;
-            console.log('remoteStream tracks', remoteStream.getTracks());
-            console.log('remoteStream video tracks', remoteStream.getVideoTracks());
-            if (remoteStream.getVideoTracks().length > 0) {
-                console.log('remote video track enabled:', remoteStream.getVideoTracks()[0].enabled);
+            try {
+                console.log("stresm ",remoteStream);
+                remoteVideoRef.current.srcObject = remoteStream;
+            } catch (err) {
+                console.error('Error binding remote stream:', err);
             }
         }
-        console.log('remoteStream', remoteStream);
-        console.log('remoteVideoRef', remoteVideoRef.current);
     }, [remoteStream]);
 
     const toggleMute = () => {
         if (localStream) {
-            localStream.getAudioTracks().forEach(track => {
-                track.enabled = !track.enabled;
-            });
-            setIsMuted(!isMuted);
+            const audioTrack = localStream.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = !audioTrack.enabled;
+                setIsMuted(!audioTrack.enabled);
+            }
         }
     };
 
     const toggleVideo = () => {
         if (localStream) {
-            localStream.getVideoTracks().forEach(track => {
-                track.enabled = !track.enabled;
-            });
-            setIsVideoOff(!isVideoOff);
+            const videoTrack = localStream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.enabled = !videoTrack.enabled;
+                setIsVideoOff(!videoTrack.enabled);
+            }
         }
+    };
+
+    const handleRejectCall = () => {
+        rejectCall();  // Reject the call and end the session
     };
 
     if (callStatus === 'idle') return null;
@@ -87,15 +116,23 @@ const VideoCall: React.FC = () => {
                             className="w-full h-full object-cover"
                         />
                     </div>
-                    {/* Answer Call Button (if ringing) */}
+                    {/* Answer or Reject Call Button (if ringing) */}
                     {callStatus === 'ringing' && (
                         <div className="absolute inset-0 flex items-center justify-center z-10">
-                            <button
-                                onClick={answerCall}
-                                className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-lg font-semibold shadow-lg"
-                            >
-                                Answer Call
-                            </button>
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={answerCall}
+                                    className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-lg font-semibold shadow-lg"
+                                >
+                                    Answer Call
+                                </button>
+                                <button
+                                    onClick={handleRejectCall}
+                                    className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-lg font-semibold shadow-lg"
+                                >
+                                    Reject Call
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
