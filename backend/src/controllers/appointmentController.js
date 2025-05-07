@@ -68,12 +68,12 @@ export const createAppointment = async (req, res) => {
     });
 
     const savedAppointment = await appointment.save();
-     console.log('savedAppointment:', savedAppointment);
+    //  console.log('savedAppointment:', savedAppointment);
     const populatedAppointment = await appointment.populate([
       { path: 'doctorId', select: 'name specialization' },
       { path: 'patientId', select: 'name' }
     ]);
-    console.log('populatedAppointment', populatedAppointment);
+    // console.log('populatedAppointment', populatedAppointment);
     res.status(200).json({data:populatedAppointment});
   } catch (error) {
     console.log(error);
@@ -100,7 +100,7 @@ export const updateAppointment = async (req, res) => {
     });
 
     const updatedAppointment = await appointment.save();
-    console.log('updatedAppointment:', updatedAppointment);
+    // console.log('updatedAppointment:', updatedAppointment);
     const populatedAppointment = await appointment.populate([
       { path: 'doctorId', select: 'name specialization' },
       { path: 'patientId', select: 'name' }
@@ -152,7 +152,7 @@ export const getDoctorAppointments = async (req, res) => {
       .populate('patientId', 'name')
       .sort({ date: 1,startTime:1 });
       //add user details to the appointments
-    console.log("appointments",appointments);
+    // console.log("appointments",appointments);
     res.json(appointments);
   } catch (error) {
     console.log(error);
@@ -172,7 +172,7 @@ export const getDoctorAppointments = async (req, res) => {
       const appointments = await Appointment.find({ patientId: userId })
         .populate('doctorId', 'name specialization')
         .sort({ date: 1,startTime:1 });
-      console.log("got patient appointments",appointments);
+      // console.log("got patient appointments",appointments);
       res.json(appointments); 
     }
     catch (error) {

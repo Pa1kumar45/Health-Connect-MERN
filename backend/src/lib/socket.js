@@ -47,8 +47,8 @@ const handleSocketConnection = (io) => {
         socket.on('answer-call', (data) => {
             const callerSocketId = onlineUsers.get(data.to);
             console.log('Caller socket ID [answer]:', callerSocketId);
-            console.log('Answering call:');
             if (callerSocketId) {
+            console.log('Answering call:');
                 io.to(callerSocketId).emit('call-answered', {
                     answer: data.answer
                 });
@@ -64,7 +64,7 @@ const handleSocketConnection = (io) => {
             // }
             console.log('ICE candidate:', data.candidate);
             console.log('Receiver socket ID [ICE candidate]:', receiverSocketId);
-            socket.broadcast.to(receiverSocketId).emit('ice-candidate', {
+            socket.broadcast.emit('ice-candidate', {
                 candidate: data.candidate
             });
         });

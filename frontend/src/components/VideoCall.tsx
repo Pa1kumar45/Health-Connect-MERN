@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, Mic, MicOff, Video, VideoOff } from 'lucide-react';
 import { useVideoCall } from '../context/VideoCallContext';
 
@@ -6,19 +6,33 @@ const VideoCall: React.FC = () => {
     const { localStream, remoteStream, endCall, callStatus, answerCall } = useVideoCall();
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
-    const [isMuted, setIsMuted] = React.useState(false);
-    const [isVideoOff, setIsVideoOff] = React.useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isVideoOff, setIsVideoOff] = useState(false);
 
     useEffect(() => {
         if (localStream && localVideoRef.current) {
             localVideoRef.current.srcObject = localStream;
+            console.log('localStream tracks', localStream.getTracks());
+            console.log('localStream video tracks', localStream.getVideoTracks());
+            if (localStream.getVideoTracks().length > 0) {
+                console.log('local video track enabled:', localStream.getVideoTracks()[0].enabled);
+            }
         }
+        console.log('localStream', localStream);
+        console.log('localVideoRef', localVideoRef.current);
     }, [localStream]);
 
     useEffect(() => {
         if (remoteStream && remoteVideoRef.current) {
             remoteVideoRef.current.srcObject = remoteStream;
+            console.log('remoteStream tracks', remoteStream.getTracks());
+            console.log('remoteStream video tracks', remoteStream.getVideoTracks());
+            if (remoteStream.getVideoTracks().length > 0) {
+                console.log('remote video track enabled:', remoteStream.getVideoTracks()[0].enabled);
+            }
         }
+        console.log('remoteStream', remoteStream);
+        console.log('remoteVideoRef', remoteVideoRef.current);
     }, [remoteStream]);
 
     const toggleMute = () => {
