@@ -1,8 +1,8 @@
-# MedConnect - Healthcare Appointment & Communication System
+# Health Connect - Healthcare Appointment & Communication System
 
 ## Project Overview
 
-MedConnect is a comprehensive healthcare platform designed to streamline doctor-patient interactions through a modern web application. The system facilitates appointment scheduling, real-time communication, video consultations, and medical record management in a secure and user-friendly environment.
+HealthConnect is a comprehensive healthcare platform designed to streamline doctor-patient interactions through a modern web application. The system facilitates appointment scheduling, real-time communication, video consultations, and medical record management in a secure and user-friendly environment.
 
 ## Key Features
 
