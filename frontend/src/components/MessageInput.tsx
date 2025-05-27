@@ -84,7 +84,7 @@ const MessageInput = ({ sendMessage }) => {
             onChange={handleImageChange}
           />
 
-          {/* <button
+          <button
             type="button"
             className={`hidden sm:flex items-center justify-center w-10 h-10 rounded-full
                      bg-gray-800 hover:bg-gray-700 transition-colors duration-200
@@ -92,7 +92,7 @@ const MessageInput = ({ sendMessage }) => {
             onClick={() => fileInputRef.current?.click()}
           >
             <Image size={18} />
-          </button> */}
+          </button>
         </div>
         <button
           type="submit"

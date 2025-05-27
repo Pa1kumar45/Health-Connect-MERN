@@ -31,13 +31,7 @@ const handleSocketConnection = (io) => {
             console.log('Online users:', Array.from(onlineUsers.entries()));
         }
 
-        socket.on('newMessage', (message) => {
-            console.log('New message received:', message);
-            const receiverSocketId = onlineUsers.get(message.receiverId);
-            if (receiverSocketId) {
-                io.to(receiverSocketId).emit('newMessage', message);
-            }
-        });
+       
 
         socket.on('call-user', (data) => {
             const receiverSocketId = onlineUsers.get(data.to);

@@ -18,8 +18,25 @@ const messageSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+    read: {
+      type: Boolean,
+      default: false,
+    },
+    type: {
+      type: String,
+      enum: ['text', 'image'],
+      default: 'text'
+    }
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: {
+      transform: function(doc, ret) {
+        ret.createdAt = ret.createdAt.toISOString();
+        return ret;
+      }
+    }
+  }
 );
 
 const Message = mongoose.model("Message", messageSchema);

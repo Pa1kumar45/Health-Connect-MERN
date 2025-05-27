@@ -130,9 +130,7 @@ MedConnect is a comprehensive healthcare platform designed to streamline doctor-
 ### Messages
 - Real-time messaging handled via Socket.io
 
-## Contributors
-- [Your Name]
-- [Team Member Names]
+
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.

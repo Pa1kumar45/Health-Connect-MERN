@@ -5,9 +5,6 @@ import { axiosInstance } from '../utils/axios';
 import MessageInput from '../components/MessageInput';
 import { useMessage } from '../context/MessageContext';
 import { formatMessageTime } from '../lib/utils';
-import { Video } from 'lucide-react';
-import { useVideoCall } from '../context/VideoCallContext';
-import VideoCall from '../components/VideoCall';
 
 interface User {
     _id: string;
@@ -41,7 +38,6 @@ const Chat = () => {
     const { id } = useParams<{ id: string }>();
     const { currentUser, socket } = useApp();
     const messageContext = useMessage();
-    const { startCall } = useVideoCall();
     
     if (!messageContext) {
         return <div>Loading...</div>;
@@ -106,24 +102,9 @@ const Chat = () => {
         }
     }
 
-    const handleVideoCall = () => {
-        if (id) {
-            startCall(id);
-        }
-    };
-
     return (
         <div className="flex flex-col h-full bg-gray-900 text-gray-100">
             <div className="flex flex-col h-full">
-                <div className="flex justify-end p-2">
-                    <button
-                        onClick={handleVideoCall}
-                        className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                    >
-                        <Video size={20} />
-                    </button>
-                </div>
-
                 <div 
                     ref={chatContainerRef}
                     className="flex-1 overflow-y-auto px-2 py-2 md:px-4 md:py-3"
@@ -222,10 +203,276 @@ const Chat = () => {
                     <MessageInput sendMessage={sendMessage} />
                 </div>
             </div>
-
-            <VideoCall />
         </div>
     );
 };
 
 export default Chat;
+
+import { useRef, useState } from "react";
+import { Image, Send, X } from "lucide-react";
+
+const MessageInput = ({ sendMessage }) => {
+  const [text, setText] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file || !file.type.startsWith("image/")) {
+      console.log("Please select an image file");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!text.trim() && !imagePreview) return;
+
+    try {
+      await sendMessage({
+        text: text.trim(),
+        image: imagePreview,
+      });
+
+      // Clear form
+      setText("");
+      setImagePreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
+  };
+
+  return (
+    <div className="p-3 w-full bg-gray-900">
+      {imagePreview && (
+        <div className="mb-3 flex items-center gap-2">
+          <div className="relative">
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="w-20 h-20 object-cover rounded-lg border border-gray-700"
+            />
+            <button
+              onClick={removeImage}
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-800 
+              hover:bg-gray-700 transition-colors duration-200 flex items-center justify-center"
+              type="button"
+            >
+              <X className="size-3 text-gray-300" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+        <div className="flex-1 flex gap-2">
+          <input
+            type="text"
+            className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-100 border border-gray-700 
+                     focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            placeholder="Type a message..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleImageChange}
+          />
+
+          <button
+            type="button"
+            className={`hidden sm:flex items-center justify-center w-10 h-10 rounded-full
+                     bg-gray-800 hover:bg-gray-700 transition-colors duration-200
+                     ${imagePreview ? "text-blue-400" : "text-gray-300"}`}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Image size={18} />
+          </button>
+        </div>
+        <button
+          type="submit"
+          className={`flex items-center justify-center w-10 h-10 rounded-full
+                   transition-colors duration-200
+                   ${!text.trim() && !imagePreview 
+                     ? "bg-gray-800 text-gray-500 cursor-not-allowed" 
+                     : "bg-blue-600 hover:bg-blue-700 text-white"}`}
+          disabled={!text.trim() && !imagePreview}
+        >
+          <Send size={18} />
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default MessageInput;
+
+
+
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { axiosInstance } from "../utils/axios";
+import { Doctor, Message, Patient } from "../types";
+import { useApp } from "./AppContext";
+
+interface MessageContextType {
+    messages:Message[]|null;
+    setMessages:(messages:Message[]|null)=>void;
+    fetchMessages:(id:string)=>void;
+    getSelectedUser:(id:string)=>void;
+    selectedUser:Doctor|Patient|null;
+
+}
+
+const MessageContext = createContext<MessageContextType|null>(null);
+
+export const MessageProvider:React.FC<{children:React.ReactNode}>=({children})=>{
+const [messages, setMessages] = useState<Message[] | null>(null);
+const [selectedUser, setSelectedUser] = useState<Doctor|Patient|null>(null);
+const {socket}= useApp();
+
+    const getSelectedUser= async(id:string)=>{
+        const userData = await axiosInstance.get(`/message/users/${id}`);
+        setSelectedUser(userData.data.data); 
+        console.log("selected user",userData.data.data);
+        
+    }
+    const fetchMessages = async(id:string)=>{
+        const messagesData=await axiosInstance.get(`/message/${id}`);
+        console.log("messages fetched",messagesData);
+               setMessages(messagesData.data.messages);
+    }
+    
+return(
+    <MessageContext.Provider value={{messages,setMessages,fetchMessages,getSelectedUser ,selectedUser}}>
+        {children}
+    </MessageContext.Provider>
+)
+}
+
+
+export const useMessage =()=>{
+    const context= useContext(MessageContext);
+    if(context===undefined){
+        throw new Error("use message can only be used inside Message Provider");
+
+    }
+    return context;
+}
+
+
+import Message from "../models/Message.js";
+import Patient from "../models/Patient.js";
+import Doctor from "../models/Doctor.js";
+import { getSocketId, io } from "../lib/socket.js";
+import cloudinary from '../lib/cloudinary.js';
+
+// import 
+export const getUsers = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Search in both collections
+        const [patient, doctor] = await Promise.all([
+            Patient.findById(id).select("-password"),
+            Doctor.findById(id).select("-password")
+        ]);
+
+        if (!patient && !doctor) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found in either collection"
+            });
+        }
+
+        // Determine which user was found and their role
+        const foundUser = patient || doctor;
+        const userRole = patient ? 'patient' : 'doctor';
+
+        res.status(200).json({
+            success: true,
+            data: {
+                ...foundUser.toObject(),
+                role: userRole
+            }
+        });
+    } catch (error) {
+        console.error("Error in getting user:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};
+
+
+export const fetchMessages =async(req,res)=>{
+    try {
+        const {receiverId} = req.params;
+
+        const senderId= req.user._id;
+//        here we shoudl use await to prevent error s
+// refer https://www.geeksforgeeks.org/mongodb-db-collection-find-method/
+        const messages= await Message.find({$or:[
+            {senderId:senderId,receiverId:receiverId},
+            {receiverId:senderId,senderId:receiverId}
+        ]})
+        
+
+        res.status(200).json({success:true,messages});
+        
+    } catch (error) {
+        console.log("error in fethcing messages",error);
+        res.status(500).json({success:false,message:error})
+    }
+}
+
+
+export const sendMessage =async(req,res)=>{
+    try {
+        const senderId=req.user._id;
+        const {receiverId}=req.params;
+
+        const {text,image}=req.body;
+        let imageUrl;
+        if(image){
+            console.log("identified as image")
+            const uploadData= await cloudinary.uploader.upload(image);
+            // const uploadData= await v2.uploader.upload(image);
+            imageUrl=uploadData.secure_url;
+
+        }
+
+        const newMessage = new Message({
+            senderId:senderId,
+            receiverId:receiverId,
+            text,
+            image:imageUrl,
+        });
+        await newMessage.save();
+        const reciverSocketId=getSocketId(receiverId);
+        if(reciverSocketId)
+        io.to(reciverSocketId).emit("newMessage",newMessage);
+
+        res.status(201).json({success:true,newMessage})
+    } catch (error) {
+        console.log("failed to save message",error);
+        res.status(500).json({success:false,message:error})
+    }
+}
+
