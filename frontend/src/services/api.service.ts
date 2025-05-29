@@ -2,8 +2,9 @@ import { AppProvider, useApp } from '../context/AppContext';
 import { Doctor, Patient, Appointment, Message, AuthResponse } from '../types';
 
 import { axiosInstance } from '../utils/axios';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
-export const API_URL = 'http://localhost:5000/api';
+export const API_URL = `${BACKEND_URL}/api`;
 
 
 

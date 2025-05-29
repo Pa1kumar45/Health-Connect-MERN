@@ -3,6 +3,8 @@ import { axiosInstance } from '../utils/axios';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client';
 import { Doctor, Patient, SignUpFormData, LoginCredentials } from '../types/index';
+//import backend url form .env
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 interface ThemeContextType {
   isDarkMode: boolean;
@@ -107,7 +109,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             socket.disconnect();
         }
 
-        const newSocket = io('http://localhost:5000', {
+        const newSocket = io(BACKEND_URL, {
             query: { userId: id },
             reconnection: true,
             reconnectionAttempts: 5,
