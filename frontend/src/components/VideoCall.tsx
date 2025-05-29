@@ -3,7 +3,7 @@ import { X, Mic, MicOff, Video, VideoOff } from 'lucide-react';
 import { useVideoCall } from '../context/VideoCallContext';
 
 const VideoCall: React.FC = () => {
-    const { localStream, remoteStream, endCall, callStatus, answerCall, rejectCall ,callerId } = useVideoCall();
+    const { localStream, remoteStream, endCall, callStatus, answerCall, rejectCall } = useVideoCall();
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
     const [isMuted, setIsMuted] = useState(false);
@@ -80,11 +80,11 @@ const VideoCall: React.FC = () => {
 
 
     //get the caller details from the context and show it in the header based on callerId
-    const getCallerDetails = () => {
-        // Assuming you have a function to fetch caller details based on callerId
-        // This is just a placeholder, replace with actual implementation
-        return callerId ? `Call from ${callerId}` : 'Incoming Call';
-    }
+    // const getCallerDetails = () => {
+    //     // Assuming you have a function to fetch caller details based on callerId
+    //     // This is just a placeholder, replace with actual implementation
+    //     return callerId ? `Call from ${callerId}` : 'Incoming Call';
+    // }
 
     
     

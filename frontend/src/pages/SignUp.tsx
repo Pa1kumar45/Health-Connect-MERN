@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/auth.service';
-import { apiService, getCurrentUser } from '../services/api.service';
 import { useApp } from '../context/AppContext';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { SignUpFormData } from '../types';
+import { SignUpFormData } from '../types/index.ts';
 
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const {currentUser, setCurrentUser,signup } = useApp();
+  const {currentUser,signup } = useApp();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<SignUpFormData>({

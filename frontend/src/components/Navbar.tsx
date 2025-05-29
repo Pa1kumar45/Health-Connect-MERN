@@ -1,14 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Sun, Moon } from 'lucide-react';
-import { useApp, useTheme } from '../context/AppContext';
-import {authService} from '../services/auth.service';
-import DoctorDashboard from '../pages/DoctorDashboard';
+import  { useEffect, useState } from 'react';
+import { Link} from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
+import { useApp} from '../context/AppContext';
 
 
 const Navbar = () => {
-  const navigate = useNavigate();
-  const { isDarkMode, toggleDarkMode } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { currentUser,logout } = useApp();
 

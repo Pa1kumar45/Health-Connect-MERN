@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { User, Mail, Calendar, Clock, Plus, Trash2, GraduationCap, Briefcase, Phone, Image } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Doctor, Schedule, Slot } from '../types';
-import { apiService } from '../services/api.service';
+import { Doctor, Schedule, Slot } from '../types/index.ts';
+
 import { useApp } from '../context/AppContext';
-import { authService } from '../services/auth.service';
+
 import { doctorService } from '../services/doctor.service';
 
 interface DoctorFormData {
@@ -21,7 +20,6 @@ interface DoctorFormData {
 }
 
 const DoctorProfile = () => {
-  const navigate = useNavigate();
   const { currentUser, setCurrentUser } = useApp();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -239,7 +237,7 @@ const DoctorProfile = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className=" text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <User size={18} className="text-blue-500" /> Full Name
                   </label>
                   <input
@@ -252,7 +250,7 @@ const DoctorProfile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className=" text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <Mail size={18} className="text-blue-500" /> Email
                   </label>
                   <input
@@ -266,7 +264,7 @@ const DoctorProfile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className=" text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <Briefcase size={18} className="text-blue-500" /> Specialization
                   </label>
                   <input
@@ -279,7 +277,7 @@ const DoctorProfile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className=" text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <Calendar size={18} className="text-blue-500" /> Experience (Years)
                   </label>
                   <input
@@ -295,7 +293,7 @@ const DoctorProfile = () => {
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className=" text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <GraduationCap size={18} className="text-blue-500" /> Qualification
                   </label>
                   <input
@@ -308,7 +306,7 @@ const DoctorProfile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className=" text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <Phone size={18} className="text-blue-500" /> Contact Number
                   </label>
                   <input
@@ -321,7 +319,7 @@ const DoctorProfile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className=" text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <Image size={18} className="text-blue-500" /> Profile Picture URL
                   </label>
                   <input
@@ -336,7 +334,7 @@ const DoctorProfile = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+              <label className=" text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                 <User size={18} className="text-blue-500" /> About Yourself
               </label>
               <textarea

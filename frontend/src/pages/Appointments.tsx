@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Video, MessageSquare, Check, X, Clock, Calendar, User, AlertCircle } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Appointment, AppointmentStatus } from '../types';
+import { Appointment, AppointmentStatus } from '../types/types';
 import { appointmentService } from '../services/appointment.service';
 import { useApp } from '../context/AppContext';
 import { useVideoCall } from '../context/VideoCallContext';
 
 const Appointments = () => {
     const navigate = useNavigate();
-    const { currentUser, setCurrentUser } = useApp();
+    const { currentUser} = useApp();
     const { startCall, isInCall } = useVideoCall();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -43,7 +43,7 @@ const Appointments = () => {
 
     const handleUpdateAppointment = async (appointment: Appointment, status: AppointmentStatus) => {
         try {
-            const updatedAppointment = await appointmentService.updateAppointment(
+             await appointmentService.updateAppointment(
                 appointment._id,
                 { ...appointment, status }
             );

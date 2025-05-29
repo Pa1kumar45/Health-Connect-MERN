@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Video, MessageSquare, Check, X, Clock, Calendar, User, AlertCircle, Filter } from 'lucide-react';
+import { Video, MessageSquare, Check, X, Clock, Calendar, User, AlertCircle } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Appointment, AppointmentStatus } from '../types';
+import { Appointment, AppointmentStatus } from '../types/types';
 import { appointmentService } from '../services/appointment.service';
 import { useApp } from '../context/AppContext';
 import { useVideoCall } from '../context/VideoCallContext';

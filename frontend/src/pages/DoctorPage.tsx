@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Star, Clock, Briefcase, GraduationCap, User, Phone } from 'lucide-react';
+import {  Clock, Briefcase, GraduationCap, User, Phone } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { doctorService } from '../services/doctor.service';
 import { appointmentService } from '../services/appointment.service';
-import { Doctor, Appointment, Slot, Patient } from '../types';
-import { apiService } from '../services/api.service';
+import { Doctor, Appointment, Slot } from '../types/index.ts';
+
 import { useApp } from '../context/AppContext';
 
 const DoctorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [doctor, setDoctor] = useState<Doctor | null>(null);
-  const {currentUser, setCurrentUser} = useApp();
+  const {currentUser} = useApp();
   const [appointment, setAppointment] = useState<Appointment>(
     {
       date:` ${new Date()}`,
@@ -49,10 +49,8 @@ const DoctorPage: React.FC = () => {
     }
   };
 
-  const handleAppointment = async(appointment:Appointment)=>{
 
-  }
-  const handleBookAppointment = async (e: React.FormEvent) => {
+  const handleBookAppointment = async () => {
     //using this prevents refreshing the page after submit as this is part of the form compoent
     //so we can check what is happenning as the code runs
     // e.preventDefault();

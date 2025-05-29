@@ -1,18 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Calendar, Clock, Video, MessageCircle, X } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Calendar, Clock, Video, MessageCircle} from 'lucide-react';
+import {  useNavigate } from 'react-router-dom';
 // import { format } from 'date-fns';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { apiService } from '../services/api.service';
 import { appointmentService } from '../services/appointment.service';
-import { Doctor, Appointment, Patient } from '../types';
+import { Doctor, Appointment } from '../types/index.ts';
 import { doctorService } from '../services/doctor.service';
 import { useVideoCall } from '../context/VideoCallContext';
 
 const PatientAppointments = () => {
   const navigate= useNavigate();
-  const {currentUser, setCurrentUser} = useApp();
+  const {currentUser} = useApp();
   const { startCall, isInCall } = useVideoCall();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -30,7 +29,7 @@ const PatientAppointments = () => {
         ]);
         console.log("appointmentsData",appointmentsData);
         console.log("doctorsData",doctorsData);
-        setAppointments(appointmentsData);
+        setAppointments(appointmentsData as Appointment[]);
         setDoctors(doctorsData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error loading data');
@@ -143,10 +142,10 @@ const PatientAppointments = () => {
             No appointments found
           </div>
         ) : (
-          filteredAppointments.map(appointment => {
+          filteredAppointments.map((appointment:any) => {
             console.log("appointment",appointment);
             const doctor = getDoctor(appointment.doctorId._id);
-            console.log("doctor",doctor);
+          
             return (
               <div
                 key={appointment._id}

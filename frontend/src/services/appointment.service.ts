@@ -1,4 +1,4 @@
-import { Appointment } from '../types';
+import { Appointment } from '../types/types';
 import {  API_URL } from './api.service';
 
 export const appointmentService = {

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Star } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { doctorService } from '../services/doctor.service';
-import { Doctor } from '../types';
+import { Doctor } from '../types/index.ts';
 import { useApp } from '../context/AppContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -13,7 +13,7 @@ const DoctorList = () => {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('');
-  const [minRating, setMinRating] = useState(0);
+  // const [minRating, setMinRating] = useState(0);
   const [minExperience, setMinExperience] = useState(0);
 
   useEffect(() => {

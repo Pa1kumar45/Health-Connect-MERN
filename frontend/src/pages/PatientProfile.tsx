@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { User, Mail, Calendar, Phone, Droplet, AlertCircle, Plus, Trash2, Image } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Patient, EmergencyContact } from '../types';
+import { Patient, EmergencyContact } from '../types/index.ts';
 import { apiService } from '../services/api.service';
 import { useApp } from '../context/AppContext';
-import { authService } from '../services/auth.service';
 
 interface PatientFormData {
   name: string;
@@ -21,7 +19,6 @@ interface PatientFormData {
 }
 
 const PatientProfile = () => {
-  const navigate = useNavigate();
   const { currentUser, setCurrentUser } = useApp();
   // console.log("currentUser from the context",currentUser)
 
@@ -139,10 +136,10 @@ const PatientProfile = () => {
       };
 
       const UpdatedData = await apiService.updatePatientProfile(submitData as Patient);
-      const updatedData=UpdatedData.data;
+      const updatedData=UpdatedData;
       
       // Update both currentUser and formData with the complete data
-      setCurrentUser(UpdatedData.data);
+      setCurrentUser(UpdatedData);
       
       // Create a new form data object with all required fields
       const newFormData: PatientFormData = {
@@ -231,7 +228,7 @@ const PatientProfile = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className=" text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <User size={18} className="text-blue-500" /> Full Name
                   </label>
                   <input
@@ -244,7 +241,7 @@ const PatientProfile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className="  text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <Mail size={18} className="text-blue-500" /> Email
                   </label>
                   <input
@@ -258,7 +255,7 @@ const PatientProfile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className="  text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <Calendar size={18} className="text-blue-500" /> Date of Birth
                   </label>
                   <input
@@ -271,7 +268,7 @@ const PatientProfile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className="  text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <User size={18} className="text-blue-500" /> Gender
                   </label>
                   <select
@@ -289,7 +286,7 @@ const PatientProfile = () => {
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className="  text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <Droplet size={18} className="text-blue-500" /> Blood Group
                   </label>
                   <select
@@ -311,7 +308,7 @@ const PatientProfile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className="  text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <Phone size={18} className="text-blue-500" /> Contact Number
                   </label>
                   <input
@@ -324,7 +321,7 @@ const PatientProfile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className="  text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <AlertCircle size={18} className="text-blue-500" /> Allergies
                   </label>
                   <input
@@ -338,7 +335,7 @@ const PatientProfile = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <label className="  text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     <Image size={18} className="text-blue-500" /> Profile Picture URL
                   </label>
                   <input

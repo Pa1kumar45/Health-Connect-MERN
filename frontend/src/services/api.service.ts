@@ -1,7 +1,7 @@
-import { AppProvider, useApp } from '../context/AppContext';
-import { Doctor, Patient, Appointment, Message, AuthResponse } from '../types';
+// import { AppProvider, useApp } from '../context/AppContext';
+import { Patient } from '../types/index.ts';
 
-import { axiosInstance } from '../utils/axios';
+// import { axiosInstance } from '../utils/axios';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export const API_URL = `${BACKEND_URL}/api`;
@@ -43,7 +43,8 @@ export const apiService = {
       throw new Error(error.message || 'Failed to update profile');
     }
 
-    return response.json();
+    const return_data=await response.json();
+    return return_data.data;
   },
 
 }; 

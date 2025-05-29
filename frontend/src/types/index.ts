@@ -100,13 +100,16 @@ export interface Schedule {
 
 
 export interface Message {
-  id: string;
+  _id: string;
   senderId: string;
   receiverId: string;
   content: string;
   timestamp: string;
   type: 'text' | 'image';
   read: boolean;
+  createdAt: string;
+  text?: string;
+  image?: string;
 }
 
 export interface LoginCredentials {

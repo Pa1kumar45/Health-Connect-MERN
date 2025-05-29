@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/auth.service';
-import { apiService } from '../services/api.service';
 import { useApp } from '../context/AppContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -13,7 +11,7 @@ interface LoginFormData {
 
 const Login = () => {
   const navigate = useNavigate();
-  const { setCurrentUser,currentUser,login,role,setRole } = useApp();
+  const {login} = useApp();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<LoginFormData>({

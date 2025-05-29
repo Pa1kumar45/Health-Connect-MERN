@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import  { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useApp } from '../context/AppContext';
 import { axiosInstance } from '../utils/axios';
@@ -8,34 +8,28 @@ import { formatMessageTime } from '../lib/utils';
 import { Video } from 'lucide-react';
 import { useVideoCall } from '../context/VideoCallContext';
 import VideoCall from '../components/VideoCall';
+import { Message } from '../types/index.ts';
 
-interface User {
-    _id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-    role: string;
-    profileCompleted: boolean;
-    contactNumber?: string;
-    dateOfBirth?: string;
-    gender?: string;
-    bloodGroup?: string;
-    allergies?: string;
-    emergencyContact?: Array<{
-        name: string;
-        relationship: string;
-        contactNumber: string;
-    }>;
-}
+// interface User {
+//     _id: string;
+//     name: string;
+//     email: string;
+//     avatar?: string;
+//     role: string;
+//     profileCompleted: boolean;
+//     contactNumber?: string;
+//     dateOfBirth?: string;
+//     gender?: string;
+//     bloodGroup?: string;
+//     allergies?: string;
+//     emergencyContact?: Array<{
+//         name: string;
+//         relationship: string;
+//         contactNumber: string;
+//     }>;
+// }
 
-interface Message {
-    _id: string;
-    senderId: string;
-    receiverId: string;
-    text?: string;
-    image?: string;
-    createdAt: string;
-}
+
 
 const Chat = () => {
     const { id } = useParams<{ id: string }>();
@@ -73,7 +67,7 @@ const Chat = () => {
         const handleNewMessage = (newMessage: Message) => {
             console.log("New message received:", newMessage);
             if (newMessage.receiverId === currentUser?._id) {
-                setMessages(prevMessages => {
+                setMessages((prevMessages:Message[]) => {
                     if (!prevMessages) return [newMessage];
                     return [...prevMessages, newMessage];
                 });
@@ -97,7 +91,7 @@ const Chat = () => {
         try {
             const response = await axiosInstance.post(`/message/send/${id}`, data);
             console.log("Message sent:", response.data.newMessage);
-            setMessages(prevMessages => {
+            setMessages((prevMessages:Message[]) => {
                 if (!prevMessages) return [response.data.newMessage];
                 return [...prevMessages, response.data.newMessage];
             });

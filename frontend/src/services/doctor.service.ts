@@ -1,4 +1,4 @@
-import { Doctor } from '../types';
+import { Doctor } from '../types/index.ts';
 const API_URL = 'http://localhost:5000/api';
 
 
