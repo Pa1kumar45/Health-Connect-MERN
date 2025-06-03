@@ -1,5 +1,5 @@
 import { Doctor } from '../types/index.ts';
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_BACKEND_URL ;
 
 
 
