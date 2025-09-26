@@ -22,7 +22,12 @@ const io = new Server(server, {
     },
     allowEIO3: true,
     pingTimeout: 60000,
-    pingInterval: 25000
+    pingInterval: 25000,
+    cookie:{    // for https
+        httpOnly:true,
+        secure:true,
+        sameSite:'strict'
+    }
 });
 
 const handleSocketConnection = (io) => {
