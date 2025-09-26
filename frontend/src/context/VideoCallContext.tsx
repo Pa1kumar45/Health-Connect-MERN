@@ -36,8 +36,29 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const pendingCandidatesRef = useRef<RTCIceCandidate[]>([]);
   const pendingOfferRef = useRef<RTCSessionDescriptionInit | null>(null);
 
+
+  useEffect(() => {
+   
+    console.log("Socket in VideoCallContext:", socket);
+    console.log("PeerConnectionRef in VideoCallContext:", peerConnectionRef.current);
+    console.log("IsInCall in VideoCallContext:", isInCall);
+    console.log("CallStatus in VideoCallContext:", callStatus);
+    console.log("CallerId in VideoCallContext:", callerId);
+    console.log("LocalStream in VideoCallContext:", localStream);
+    console.log("RemoteStream in VideoCallContext:", remoteStream);
+    console.log("PendingCandidatesRef in VideoCallContext:", pendingCandidatesRef.current);
+    console.log("PendingOfferRef in VideoCallContext:", pendingOfferRef.current);
+    console.log("PeerConfiguration in VideoCallContext:", peerConfiguration);
+
+  }, [socket, peerConnectionRef.current, isInCall, callStatus, callerId, localStream, remoteStream, pendingCandidatesRef.current, pendingOfferRef.current, peerConfiguration]);
+
+
+
+
+
   // Cleanup function
   const cleanupCall = () => {
+    console.log("cleanupCall called");
     console.log('Cleaning up call resources');
     
     if (localStream) {
@@ -59,6 +80,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     pendingOfferRef.current = null;
     setCallStatus('idle');
     setIsInCall(false);
+    setCallerId(null);
   };
 
   // Create a new RTCPeerConnection
@@ -244,6 +266,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // End an ongoing call
   const endCall = () => {
+    console.log('Ending call');
     if (socket && callerId) {
       console.log('Ending call with:', callerId);
       socket.emit('call-end', { to: callerId });

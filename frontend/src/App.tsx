@@ -38,7 +38,7 @@ const App: React.FC = () => {
       }
     };
     fetchCurrentUser();
-  }, [getCurrentUser, setCurrentUser]);
+  }, []);
 
   return (
     <Router>

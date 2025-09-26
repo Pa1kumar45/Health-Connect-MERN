@@ -14,9 +14,13 @@ export const getSocketId = (id) => {
 
 const io = new Server(server, {
     cors: {
-        origin: [process.env.FRONTEND_URL],
-        credentials: true
+        origin: process.env.FRONTEND_URL,
+       methods: ["GET", "POST"],
+        credentials: true,
+        allowedHeaders: ["*"],
+        transports: ['websocket', 'polling']
     },
+    allowEIO3: true,
     pingTimeout: 60000,
     pingInterval: 25000
 });
@@ -24,11 +28,13 @@ const io = new Server(server, {
 const handleSocketConnection = (io) => {
     io.on('connection', (socket) => {
         console.log('User connected:', socket.id);
+        // list of connected users
+    
+        console.log('Online users:', Array.from(onlineUsers.entries()));
         const userId = socket.handshake.query.userId;
 
         if (userId) {
             onlineUsers.set(userId, socket.id);
-            console.log('Online users:', Array.from(onlineUsers.entries()));
         }
 
        
@@ -74,6 +80,7 @@ const handleSocketConnection = (io) => {
         });
 
         socket.on('call-end', (data) => {
+            console.log('Call ended by user:', userId);
             const receiverSocketId = onlineUsers.get(data.to);
             if (receiverSocketId) {
                 io.to(receiverSocketId).emit('call-end');

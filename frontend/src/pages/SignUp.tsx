@@ -20,7 +20,7 @@ const SignUp = () => {
     experience: 0
   });
 
-//   // Clear any existing auth data on component mount
+   // Clear any existing auth data on component mount
   useEffect(() => {
   }, []);
 

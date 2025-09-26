@@ -89,7 +89,11 @@ const Chat = () => {
 
     const sendMessage = async (data: { text?: string; image?: string }) => {
         try {
-            const response = await axiosInstance.post(`/message/send/${id}`, data);
+            const response = await axiosInstance.post(`/message/send/${id}`, data , {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
             console.log("Message sent:", response.data.newMessage);
             setMessages((prevMessages:Message[]) => {
                 if (!prevMessages) return [response.data.newMessage];

@@ -89,6 +89,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             if (response.data.data) {
                 setCurrentUser(response.data.data);
                 const id = response.data.data._id;
+                console.log("connecting socket with id:", id);
                 connectSocket(id);
             }
             return response;
@@ -99,6 +100,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const connectSocket = (id: string) => {
+        console.log("Connecting socket ...");
         if (socket?.connected) {
             console.log('Socket already connected');
             return;
@@ -108,14 +110,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (socket) {
             socket.disconnect();
         }
+        
 
         const newSocket = io(BACKEND_URL, {
             query: { userId: id },
+            withCredentials: true,  // Important for CORS
+            autoConnect: true,      // Auto connect on creation
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
-            timeout: 20000
+            timeout: 20000,
+            transports: ['websocket'], // write websocket only  dont write polling first
+            
         });
+        // newSocket.connect( 
+        //     withCredentials=true
+        // );
 
         newSocket.on('connect', () => {
             console.log('Socket connected successfully');
@@ -138,6 +148,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
 
         setSocket(newSocket);
+        
     };
 
     // Cleanup socket on unmount
