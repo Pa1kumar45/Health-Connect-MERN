@@ -1,5 +1,7 @@
 # Health Connect - Healthcare Appointment & Communication System
 
+*Based on the original project by [dineshmanideep](https://github.com/dineshmanideep/Health-Connect)*
+
 ## Project Overview
 
 HealthConnect is a comprehensive healthcare platform designed to streamline doctor-patient interactions through a modern web application. The system facilitates appointment scheduling, real-time communication, video consultations, and medical record management in a secure and user-friendly environment.
