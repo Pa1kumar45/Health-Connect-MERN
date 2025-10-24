@@ -53,7 +53,7 @@ export const fetchMessages =async(req,res)=>{
         const messages= await Message.find({$or:[
             {senderId:senderId,receiverId:receiverId},
             {receiverId:senderId,senderId:receiverId}
-        ]})
+        ]}).sort({ createdAt: 1 }); // Sort by creation time ascending
         
 
         res.status(200).json({success:true,messages});
@@ -73,11 +73,8 @@ export const sendMessage =async(req,res)=>{
         const {text,image}=req.body;
         let imageUrl;
         if(image){
-            console.log("identified as image")
             const uploadData= await cloudinary.uploader.upload(image);
-            // const uploadData= await v2.uploader.upload(image);
             imageUrl=uploadData.secure_url;
-
         }
 
         const newMessage = new Message({
@@ -87,9 +84,18 @@ export const sendMessage =async(req,res)=>{
             image:imageUrl,
         });
         await newMessage.save();
-        const reciverSocketId=getSocketId(receiverId);
-        if(reciverSocketId)
-        io.to(reciverSocketId).emit("newMessage",newMessage);
+        
+        // Emit to receiver
+        const receiverSocketId=getSocketId(receiverId);
+        if(receiverSocketId) {
+            io.to(receiverSocketId).emit("newMessage",newMessage);
+        }
+        
+        // Also emit to sender (for multi-device support or if sender is in chat)
+        const senderSocketId=getSocketId(senderId.toString());
+        if(senderSocketId && senderSocketId !== receiverSocketId) {
+            io.to(senderSocketId).emit("newMessage",newMessage);
+        }
 
         res.status(201).json({success:true,newMessage})
     } catch (error) {

@@ -65,10 +65,24 @@ const Chat = () => {
         if (!socket) return;
 
         const handleNewMessage = (newMessage: Message) => {
-            console.log("New message received:", newMessage);
-            if (newMessage.receiverId === currentUser?._id) {
+            // Add message if current user is either the sender or receiver
+            // and the message is part of the current conversation
+            // Convert to strings to ensure proper comparison
+            const messageSenderId = String(newMessage.senderId);
+            const messageReceiverId = String(newMessage.receiverId);
+            const currentUserId = String(currentUser?._id);
+            const chatPartnerId = String(id);
+            
+            const isPartOfCurrentConversation = 
+                (messageSenderId === chatPartnerId && messageReceiverId === currentUserId) ||
+                (messageSenderId === currentUserId && messageReceiverId === chatPartnerId);
+            
+            if (isPartOfCurrentConversation) {
                 setMessages((prevMessages:Message[]) => {
                     if (!prevMessages) return [newMessage];
+                    // Avoid duplicate messages
+                    const messageExists = prevMessages.some(msg => String(msg._id) === String(newMessage._id));
+                    if (messageExists) return prevMessages;
                     return [...prevMessages, newMessage];
                 });
             }
@@ -79,7 +93,7 @@ const Chat = () => {
         return () => {
             socket.off("newMessage", handleNewMessage);
         };
-    }, [socket, currentUser?._id, setMessages]);
+    }, [socket, currentUser?._id, setMessages, id]);
 
     useEffect(() => {
         if (messageEndRef.current && messages && messages.length > 0) {
@@ -89,14 +103,26 @@ const Chat = () => {
 
     const sendMessage = async (data: { text?: string; image?: string }) => {
         try {
-            const response = await axiosInstance.post(`/message/send/${id}`, data , {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-            console.log("Message sent:", response.data.newMessage);
+            // If there's an image, use multipart/form-data, otherwise use JSON
+            const config = data.image ? {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                }
+            } : {
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            };
+            
+            const response = await axiosInstance.post(`/message/send/${id}`, data, config);
+            
+            // Add message immediately for better UX
+            // The socket will also emit it, but we have duplicate check in socket handler
             setMessages((prevMessages:Message[]) => {
                 if (!prevMessages) return [response.data.newMessage];
+                // Check if message already exists (might have been added by socket)
+                const messageExists = prevMessages.some(msg => String(msg._id) === String(response.data.newMessage._id));
+                if (messageExists) return prevMessages;
                 return [...prevMessages, response.data.newMessage];
             });
         } catch (error) {
@@ -129,7 +155,8 @@ const Chat = () => {
                     {messages?.length > 0 ? (
                         <div className="space-y-3 pb-1">
                             {messages.map((message: Message, index: number) => {
-                                const isCurrentUser = message.senderId === currentUser?._id;
+                                // Convert to strings for proper comparison
+                                const isCurrentUser = String(message.senderId) === String(currentUser?._id);
                                 const isLastMessage = index === messages.length - 1;
                                 
                                 return (
