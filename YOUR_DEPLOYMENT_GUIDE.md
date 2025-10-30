@@ -28,6 +28,7 @@ This guide contains YOUR EXACT configuration values. Follow each step carefully.
 Fill in these EXACT settings:
 
 **Basic Settings:**
+
 ```
 Name: health-connect-backend
 Region: Oregon (US West) or closest to you
@@ -37,12 +38,14 @@ Runtime: Node
 ```
 
 **Build & Deploy:**
+
 ```
 Build Command: npm install
 Start Command: node src/index.js
 ```
 
 **Instance Type:**
+
 ```
 Free
 ```
@@ -86,18 +89,21 @@ FRONTEND_URL=https://placeholder-update-after-frontend-deploy.vercel.app
 ### 1.6 Copy Your Backend URL
 
 Once deployed, you'll see a URL like:
+
 ```
 https://health-connect-backend.onrender.com
 ```
 
 **📋 WRITE IT DOWN HERE:**
+
 ```
-Backend URL: ___________________________________
+Backend URL: https://health-connect-mern-backend-chat-video.onrender.com___________________________________
 ```
 
 ### 1.7 Test Backend
 
 Visit your backend URL in browser. You should see:
+
 ```
 Hello from the backend!
 ```
@@ -190,11 +196,13 @@ Wait 2-3 minutes for deployment.
 ### 2.7 Copy Your Frontend URL
 
 After redeployment, you'll see a URL like:
+
 ```
 https://health-connect-frontend.vercel.app
 ```
 
 **📋 WRITE IT DOWN HERE:**
+
 ```
 Frontend URL: ___________________________________
 ```
@@ -234,6 +242,7 @@ Frontend URL: ___________________________________
 ### 4.1 Test Backend Health
 
 Open in browser:
+
 ```
 https://your-backend-url.onrender.com
 ```
@@ -243,6 +252,7 @@ https://your-backend-url.onrender.com
 ### 4.2 Test Frontend Loads
 
 Open in browser:
+
 ```
 https://your-frontend-url.vercel.app
 ```
@@ -301,11 +311,13 @@ https://your-frontend-url.vercel.app
 ### 4.7 Test Chat (Real-time messaging)
 
 1. **Browser 1** (Patient account):
+
    - Go to doctors list
    - Click on a doctor
    - Click **"Message"** or **"Chat"**
 
 2. **Browser 2** (Doctor account - incognito):
+
    - Check messages/chat section
    - You should see patient's chat
 
@@ -346,6 +358,7 @@ Press **F12** → **Console** tab
 ### Problem: "CORS Error" in browser console
 
 **Solution:**
+
 1. Go to Render dashboard → health-connect-backend → Environment
 2. Verify `FRONTEND_URL` EXACTLY matches your Vercel URL
 3. No trailing slash: ❌ `https://app.vercel.app/` ✅ `https://app.vercel.app`
@@ -354,6 +367,7 @@ Press **F12** → **Console** tab
 ### Problem: "Failed to fetch" or API calls not working
 
 **Solution:**
+
 1. Go to Vercel dashboard → health-connect-frontend → Settings → Environment Variables
 2. Verify `VITE_BACKEND_URL` is correct
 3. Should be: `https://your-backend.onrender.com` (no trailing slash)
@@ -362,6 +376,7 @@ Press **F12** → **Console** tab
 ### Problem: Images not uploading
 
 **Solution:**
+
 - Cloudinary credentials are correct (already in your backend .env)
 - Check Cloudinary dashboard for quota: https://cloudinary.com/console
 - Free tier: 25GB storage, 25GB bandwidth/month
@@ -369,6 +384,7 @@ Press **F12** → **Console** tab
 ### Problem: Backend shows "Service Unavailable"
 
 **Solution:**
+
 - Free tier sleeps after 15 min inactivity
 - First request takes 30-60 seconds to wake up
 - This is normal for free tier
@@ -377,6 +393,7 @@ Press **F12** → **Console** tab
 ### Problem: Chat messages not appearing
 
 **Solution:**
+
 1. Check both users are online
 2. Refresh both browser windows
 3. Check browser console for WebSocket errors
@@ -385,6 +402,7 @@ Press **F12** → **Console** tab
 ### Problem: Video call not connecting
 
 **Solution:**
+
 1. Allow camera/microphone permissions
 2. Check firewall/antivirus settings
 3. Try different browser (Chrome works best)
@@ -395,15 +413,18 @@ Press **F12** → **Console** tab
 ## 📊 Monitor Your Deployment
 
 ### Render Dashboard (Backend)
+
 - **Logs**: https://dashboard.render.com → Your service → Logs
 - Check for errors or crashes
 - Monitor MongoDB connection
 
 ### Vercel Dashboard (Frontend)
+
 - **Analytics**: https://vercel.com/dashboard → Your project → Analytics
 - **Deployments**: See build logs and errors
 
 ### MongoDB Atlas
+
 - **Database**: https://cloud.mongodb.com
 - Monitor: Metrics → Check connections and queries
 - Storage: Collections → Browse data
@@ -415,11 +436,13 @@ Press **F12** → **Console** tab
 **Free Tier Limitations:**
 
 1. **Render Backend**:
+
    - Sleeps after 15 min inactivity
    - First request: 30-60 seconds (cold start)
    - 750 hours/month free
 
 2. **Vercel Frontend**:
+
    - 100GB bandwidth/month
    - Unlimited deployments
    - Edge network (fast globally)
@@ -430,6 +453,7 @@ Press **F12** → **Console** tab
    - Good for 1000+ users
 
 **Upgrade When:**
+
 - Users complain about slow load times
 - Reaching bandwidth limits
 - Need 24/7 uptime (no cold starts)
@@ -445,21 +469,24 @@ Press **F12** → **Console** tab
 ✅ HTTPS enabled (automatic on Render/Vercel)  
 ✅ CORS properly configured  
 ✅ No .env files committed to Git  
-✅ HTTP-only cookies for auth  
+✅ HTTP-only cookies for auth
 
 ---
 
 ## 🚀 Next Steps
 
 1. **Custom Domain** (Optional):
+
    - Vercel: Settings → Domains → Add custom domain
    - Render: Settings → Custom Domain
 
 2. **Monitoring** (Recommended):
+
    - Set up: https://uptimerobot.com (free)
    - Get alerts when site goes down
 
 3. **Analytics** (Optional):
+
    - Google Analytics
    - Vercel Analytics (built-in)
 
@@ -472,6 +499,7 @@ Press **F12** → **Console** tab
 ## 📞 Need Help?
 
 **Deployment Issues:**
+
 1. Check **Logs** first (Render/Vercel dashboard)
 2. Review troubleshooting section above
 3. Check browser console (F12)
@@ -498,12 +526,13 @@ Mark when complete:
 
 ---
 
-**Deployed on**: _______________  
-**Deployed by**: _______________  
+**Deployed on**: ******\_\_\_******  
+**Deployed by**: ******\_\_\_******
 
 **Live URLs**:
-- Frontend: ___________________________________
-- Backend: ___________________________________
+
+- Frontend: ****************\_\_\_****************
+- Backend: ****************\_\_\_****************
 
 ---
 

@@ -42,6 +42,7 @@ vercel --prod
 ```
 
 **Answer the prompts:**
+
 - Set up and deploy? → `Y`
 - Which scope? → Select your account
 - Link to existing project? → `N`
@@ -87,11 +88,13 @@ Or use dashboard: Deployments → Latest → ⋯ → Redeploy
 ## Step 4: Test Everything
 
 Open your frontend URL in browser:
+
 ```
 https://your-frontend.vercel.app
 ```
 
 Test:
+
 - ✅ Registration
 - ✅ Login
 - ✅ Profile update with image
@@ -103,18 +106,22 @@ Test:
 ## Quick Checks
 
 ### Check backend is live:
+
 ```powershell
 # In PowerShell
 curl https://your-backend.onrender.com
 ```
+
 Should return: "Hello from the backend!"
 
 ### Check frontend build locally:
+
 ```powershell
 cd frontend
 npm run build
 npm run preview
 ```
+
 Visit: http://localhost:4173
 
 ---
@@ -122,17 +129,20 @@ Visit: http://localhost:4173
 ## Your Configuration
 
 **MongoDB**: Already configured ✅
+
 ```
 mongodb+srv://new_user_2:pavan2005@pav2.kc1lw5c.mongodb.net/health-connect
 ```
 
 **Cloudinary**: Already configured ✅
+
 ```
 Cloud Name: dfjrbwspn
 API Key: 336267127851455
 ```
 
 **JWT Secret**: Already generated ✅
+
 ```
 c2ab6104df0e5b289719499f605ecaf42288162b3ab706a84a0201cfdab73a30
 ```
@@ -142,14 +152,17 @@ c2ab6104df0e5b289719499f605ecaf42288162b3ab706a84a0201cfdab73a30
 ## If Something Goes Wrong
 
 **CORS Error:**
+
 - Check `FRONTEND_URL` in Render exactly matches Vercel URL
 - No trailing slash!
 
 **API Not Working:**
+
 - Check `VITE_BACKEND_URL` in Vercel environment variables
 - Redeploy frontend after changes
 
 **Backend Slow:**
+
 - Free tier sleeps after 15 min
 - First request takes 30-60 seconds (normal)
 
@@ -160,6 +173,7 @@ c2ab6104df0e5b289719499f605ecaf42288162b3ab706a84a0201cfdab73a30
 See: `YOUR_DEPLOYMENT_GUIDE.md`
 
 It has:
+
 - Step-by-step screenshots descriptions
 - Troubleshooting for every issue
 - Testing checklist
