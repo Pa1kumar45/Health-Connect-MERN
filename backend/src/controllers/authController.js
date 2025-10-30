@@ -85,7 +85,7 @@ export const register = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Registration successful',
-      data: {...user.toObject(),role}
+      data: {...user.toObject(),role} //converts the Mongoose document to a plain JavaScript object
       
     });
   } catch (error) {
