@@ -15,9 +15,8 @@ export const generateToken = (userId, role,res) => {
       res.cookie('token',token,{
          maxAge:7*24*60*60*1000,
          httpOnly:true,
-         sameSite:'strict',
-        //  secure:false,
-         secure:true
+         sameSite:'none', // Changed from 'strict' to 'none' for cross-domain cookies (frontend on Vercel, backend on Render)
+         secure:true // Required when sameSite is 'none'
       });
   
       return token;

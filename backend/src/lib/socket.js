@@ -23,10 +23,10 @@ const io = new Server(server, {
     allowEIO3: true,
     pingTimeout: 60000,
     pingInterval: 25000,
-    cookie:{    // for https
+    cookie:{    // for https - allow cross-domain cookies for vercel.app to onrender.com
         httpOnly:true,
         secure:true,
-        sameSite:'strict'
+        sameSite:'none'  // Changed from 'strict' to 'none' for cross-domain support
     }
 });
 
