@@ -15,6 +15,7 @@ Your frontend needs to know where your backend is. Currently it's using `localho
 **Do this NOW:**
 
 1. **Go to Vercel Dashboard:**
+
    ```
    https://vercel.com/pavan-kumars-projects-ac160155/healt-connect-frontend-video-call-chat
    ```
@@ -24,16 +25,18 @@ Your frontend needs to know where your backend is. Currently it's using `localho
 3. **Click "Environment Variables"** (left sidebar)
 
 4. **Add new variable:**
+
    - **Name:** `VITE_BACKEND_URL`
    - **Value:** `https://your-backend-url.onrender.com`
-     
+
      ⚠️ **WAIT!** You haven't deployed backend yet!
-     
+
      **For now, use:** `http://localhost:5000` (we'll update after backend deployment)
 
 5. **Select environments:** Check all three boxes
+
    - ✅ Production
-   - ✅ Preview  
+   - ✅ Preview
    - ✅ Development
 
 6. **Click "Save"**
@@ -51,10 +54,12 @@ Your frontend needs to know where your backend is. Currently it's using `localho
 2. **Click "New +" → "Web Service"**
 
 3. **Connect repository:**
+
    - Select: `Pa1kumar45/Health-Connect-MERN`
    - Click "Connect"
 
 4. **Configure service:**
+
    ```
    Name: health-connect-backend
    Region: Oregon (US West) or closest to you
@@ -72,22 +77,22 @@ Your frontend needs to know where your backend is. Currently it's using `localho
 
    ```env
    PORT=5000
-   
+
    NODE_ENV=production
-   
+
    MONGODB_URI=mongodb+srv://new_user_2:pavan2005@pav2.kc1lw5c.mongodb.net/health-connect?retryWrites=true&w=majority&appName=pav2
-   
+
    JWT_SECRET=c2ab6104df0e5b289719499f605ecaf42288162b3ab706a84a0201cfdab73a30
-   
+
    CLOUDINARY_CLOUD_NAME=dfjrbwspn
-   
+
    CLOUDINARY_API_KEY=336267127851455
-   
+
    CLOUDINARY_API_SECRET=Y7DsEZXpCWW8kUo1CFmx1f4WoEY
-   
+
    FRONTEND_URL=https://healt-connect-frontend-video-call-chat-6z74ll04n.vercel.app
    ```
-   
+
    ✅ Notice: `FRONTEND_URL` is already set to YOUR deployed frontend!
 
 6. **Click "Create Web Service"**
@@ -106,6 +111,7 @@ Your frontend needs to know where your backend is. Currently it's using `localho
 Once you have your backend URL:
 
 1. **Go back to Vercel:**
+
    ```
    https://vercel.com/pavan-kumars-projects-ac160155/healt-connect-frontend-video-call-chat/settings/environment-variables
    ```
@@ -113,6 +119,7 @@ Once you have your backend URL:
 2. **Delete the old `VITE_BACKEND_URL`** (the localhost one)
 
 3. **Add new one:**
+
    - Name: `VITE_BACKEND_URL`
    - Value: `https://your-actual-backend.onrender.com` (from Step 2)
    - Environments: All three ✅
@@ -131,6 +138,7 @@ vercel --prod
 ```
 
 Or in Vercel dashboard:
+
 1. Go to "Deployments" tab
 2. Click "⋯" on latest deployment
 3. Click "Redeploy"
@@ -140,6 +148,7 @@ Or in Vercel dashboard:
 ### Step 5: Test Everything!
 
 **Open your frontend URL:**
+
 ```
 https://healt-connect-frontend-video-call-chat-6z74ll04n.vercel.app
 ```
@@ -155,6 +164,7 @@ https://healt-connect-frontend-video-call-chat-6z74ll04n.vercel.app
 7. ✅ Video call connects (tests WebRTC)
 
 **Check browser console (F12):**
+
 - Should see no red errors
 - Might see warnings (those are OK)
 
@@ -174,19 +184,22 @@ https://healt-connect-frontend-video-call-chat-6z74ll04n.vercel.app
 
 **Frontend:** https://healt-connect-frontend-video-call-chat-6z74ll04n.vercel.app ✅
 
-**Backend:** ______________________________________________ (get this from Render)
+**Backend:** **********************\_\_********************** (get this from Render)
 
 ---
 
 ## 🐛 If You See Errors
 
 **"Failed to fetch" or CORS errors:**
+
 - Backend not deployed yet (normal - deploy backend first)
 
 **Images not uploading:**
+
 - Check Cloudinary credentials in backend env vars
 
 **Chat not working:**
+
 - Check Socket.io connection in browser console
 - Ensure backend WebSocket is running
 
@@ -195,6 +208,7 @@ https://healt-connect-frontend-video-call-chat-6z74ll04n.vercel.app
 ## 🚀 Next Action
 
 **Deploy backend to Render NOW:**
+
 1. Go to: https://render.com
 2. Follow Step 2 above
 3. Copy-paste the environment variables I provided
