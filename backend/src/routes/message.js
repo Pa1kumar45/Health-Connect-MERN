@@ -12,4 +12,3 @@ router.post('/send/:receiverId',protect,sendMessage)
 
 export default router;
 
-

@@ -71,35 +71,62 @@ export const sendMessage =async(req,res)=>{
         const {receiverId}=req.params;
 
         const {text,image}=req.body;
-        let imageUrl;
+        
+        console.log("Sending message:", { 
+            senderId, 
+            receiverId, 
+            hasText: !!text, 
+            hasImage: !!image,
+            imageLength: image ? image.length : 0
+        });
+        
+        let imageUrl = null;
+        
         if(image){
-            const uploadData= await cloudinary.uploader.upload(image);
-            imageUrl=uploadData.secure_url;
+            try {
+                console.log("Uploading image to Cloudinary...");
+                const uploadData= await cloudinary.uploader.upload(image, {
+                    folder: 'health-connect/messages',
+                    resource_type: 'auto'
+                });
+                imageUrl=uploadData.secure_url;
+                console.log("Image uploaded successfully:", imageUrl);
+            } catch (uploadError) {
+                console.error("Cloudinary upload error:", uploadError);
+                return res.status(500).json({
+                    success: false, 
+                    message: "Failed to upload image"
+                });
+            }
         }
 
         const newMessage = new Message({
             senderId:senderId,
             receiverId:receiverId,
-            text,
+            text: text || "",
             image:imageUrl,
         });
         await newMessage.save();
+        
+        console.log("Message saved to DB:", newMessage._id);
         
         // Emit to receiver
         const receiverSocketId=getSocketId(receiverId);
         if(receiverSocketId) {
             io.to(receiverSocketId).emit("newMessage",newMessage);
+            console.log("Emitted to receiver:", receiverSocketId);
         }
         
         // Also emit to sender (for multi-device support or if sender is in chat)
         const senderSocketId=getSocketId(senderId.toString());
         if(senderSocketId && senderSocketId !== receiverSocketId) {
             io.to(senderSocketId).emit("newMessage",newMessage);
+            console.log("Emitted to sender:", senderSocketId);
         }
 
         res.status(201).json({success:true,newMessage})
     } catch (error) {
         console.log("failed to save message",error);
-        res.status(500).json({success:false,message:error})
+        res.status(500).json({success:false,message:error.message || "Failed to send message"})
     }
 }

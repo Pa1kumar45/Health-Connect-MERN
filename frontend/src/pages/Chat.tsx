@@ -103,18 +103,15 @@ const Chat = () => {
 
     const sendMessage = async (data: { text?: string; image?: string }) => {
         try {
-            // If there's an image, use multipart/form-data, otherwise use JSON
-            const config = data.image ? {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                }
-            } : {
-                headers: {
-                    "Content-Type": "application/json",
-                }
-            };
+            console.log("Sending message with data:", { hasText: !!data.text, hasImage: !!data.image });
             
-            const response = await axiosInstance.post(`/message/send/${id}`, data, config);
+            // Always use JSON - Cloudinary accepts base64 strings
+            const response = await axiosInstance.post(`/message/send/${id}`, {
+                text: data.text || "",
+                image: data.image || null
+            });
+            
+            console.log("Message sent successfully:", response.data);
             
             // Add message immediately for better UX
             // The socket will also emit it, but we have duplicate check in socket handler
@@ -127,6 +124,7 @@ const Chat = () => {
             });
         } catch (error) {
             console.error("Error sending message:", error);
+            console.error("Error details:", error.response?.data);
         }
     }
 

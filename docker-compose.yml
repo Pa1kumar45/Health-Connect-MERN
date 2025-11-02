@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    container_name: health-connect-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: health-connect
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - health-connect-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: health-connect-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://admin:admin123@mongodb:27017/health-connect?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+    depends_on:
+      - mongodb
+    networks:
+      - health-connect-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+    container_name: health-connect-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - health-connect-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  health-connect-network:
+    driver: bridge
