@@ -205,7 +205,9 @@ socket.on("call-user", (data) => {
 3. If accepted:
    - Gets camera/microphone access
    - Creates `RTCPeerConnection`
-   - Sets remote description (caller's offer)
+   - Sets remote description (caller's offer): "offer" is a (SDP) message sent by the     caller that describes their media setup.
+
+The callee sets this offer as the remote description:
    - Generates SDP answer
    - Sends answer back via `answer-call` event
 
@@ -240,6 +242,8 @@ const acceptCall = async () => {
 
 **What are ICE Candidates?**  
 ICE (Interactive Connectivity Establishment) candidates are network routes that browsers can use to connect. Each browser discovers multiple paths (local network, public IP, TURN relay) and shares them.
+
+"ICE stands for Interactive Connectivity Establishment. ICE candidates are network endpoints that represent different paths for establishing a peer-to-peer connection. There are three types: host candidates (local network IPs), server-reflexive candidates (public IPs discovered via STUN servers), and relay candidates (TURN server endpoints). During WebRTC connection setup, both peers gather and exchange these candidates via the signaling server. The browsers then perform connectivity checks on all candidate pairs to determine the optimal path, usually preferring direct connections but falling back to relay if firewalls or NAT prevent direct communication."
 
 **Backend Relay:** `backend/src/lib/socket.js` (Lines 70-80)
 

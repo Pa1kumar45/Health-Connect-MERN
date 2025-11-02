@@ -101,8 +101,10 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     
     peerConnection.oniceconnectionstatechange = () => {
       console.log('ICE connection state:', peerConnection.iceConnectionState);
+      
+      // Only cleanup on failed or closed states
+      // 'disconnected' can be temporary during connection, so we ignore it
       if (
-        peerConnection.iceConnectionState === 'disconnected' ||
         peerConnection.iceConnectionState === 'failed' ||
         peerConnection.iceConnectionState === 'closed'
       ) {
@@ -186,11 +188,6 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           console.error('Error setting remote description:', error);
           cleanupCall();
         }
-      });
-      
-      socket.once('call-rejected', () => {
-        console.log('Call was rejected');
-        cleanupCall();
       });
       
     } catch (error) {
@@ -315,16 +312,24 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       cleanupCall();
     };
     
+    // Handle call rejection
+    const handleCallRejected = () => {
+      console.log('Call was rejected by remote peer');
+      cleanupCall();
+    };
+    
     // Register event listeners
     socket.on('call-made', handleCallOffer);
     socket.on('ice-candidate', handleIceCandidate);
     socket.on('call-end', handleCallEnd);
+    socket.on('call-rejected', handleCallRejected);
     
     // Cleanup event listeners
     return () => {
       socket.off('call-made', handleCallOffer);
       socket.off('ice-candidate', handleIceCandidate);
       socket.off('call-end', handleCallEnd);
+      socket.off('call-rejected', handleCallRejected);
     };
   }, [socket, isInCall]);
 

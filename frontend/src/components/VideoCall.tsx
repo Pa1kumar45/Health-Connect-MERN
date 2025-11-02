@@ -129,20 +129,36 @@ const VideoCall: React.FC = () => {
                     </div>
                     {/* Answer or Reject Call Button (if ringing) */}
                     {callStatus === 'ringing' && (
-                        <div className="absolute inset-0 flex items-center justify-center z-10">
-                            <div className="flex gap-4">
-                                <button
-                                    onClick={answerCall}
-                                    className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-lg font-semibold shadow-lg"
-                                >
-                                    Answer Call
-                                </button>
-                                <button
-                                    onClick={handleRejectCall}
-                                    className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-lg font-semibold shadow-lg"
-                                >
-                                    Reject Call
-                                </button>
+                        <div className="absolute inset-0 flex items-center justify-center z-10 bg-black bg-opacity-50">
+                            <div className="flex flex-col items-center gap-4">
+                                <p className="text-white text-xl mb-4">Incoming call...</p>
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={answerCall}
+                                        className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-lg font-semibold shadow-lg"
+                                    >
+                                        Answer Call
+                                    </button>
+                                    <button
+                                        onClick={handleRejectCall}
+                                        className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-lg font-semibold shadow-lg"
+                                    >
+                                        Reject Call
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Calling status (for caller) */}
+                    {callStatus === 'calling' && (
+                        <div className="absolute inset-0 flex items-center justify-center z-10 bg-black bg-opacity-50">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="animate-pulse">
+                                    <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                                <p className="text-white text-xl">Calling...</p>
+                                <p className="text-gray-300 text-sm">Waiting for answer</p>
                             </div>
                         </div>
                     )}

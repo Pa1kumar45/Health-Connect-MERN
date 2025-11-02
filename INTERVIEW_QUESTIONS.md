@@ -2168,3 +2168,11 @@ useEffect(() => {
 ---
 
 **These three questions demonstrate full-stack security awareness, system design thinking, and React state management expertise!** 🚀
+
+🎯 Interview Answer:
+Question: "Does creating RTCPeerConnection generate the SDP offer?"
+
+Answer:
+
+"No, creating the RTCPeerConnection object just initializes the peer connection framework with STUN/TURN server configuration. It doesn't generate the SDP offer. After creating the peer connection and adding media tracks to it, we explicitly call createOffer() method, which generates the SDP offer containing codec information, media types, and network capabilities. Then we call setLocalDescription() to apply this offer to our local peer connection before sending it to the remote peer via Socket.IO for signaling."
+
