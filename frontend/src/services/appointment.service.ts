@@ -1,84 +1,32 @@
 import { Appointment } from '../types/types';
-import {  API_URL } from './api.service';
+import { axiosInstance } from '../utils/axios';
 
 export const appointmentService = {
   async addAppointment(appointmentData: Partial<Appointment>): Promise<Appointment> {
-    console.log("appointment data",appointmentData);
-    const response = await fetch(`${API_URL}/appointments/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials:'include',
-      body: JSON.stringify(appointmentData)
-    });
-
-    console.log("handle submit response",response);
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to add appointment');
-    }
-
-    return response.json();
+    console.log("appointment data", appointmentData);
+    const response = await axiosInstance.post('/appointments/', appointmentData);
+    console.log("handle submit response", response);
+    return response.data;
   },
 
   async getDoctorAppointments(): Promise<Appointment[]> {
-    const response = await fetch(`${API_URL}/appointments/doctor/`, {
-      credentials:'include'
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to fetch doctor appointments');
-    }
-
-    return response.json();
+    const response = await axiosInstance.get('/appointments/doctor/');
+    return response.data;
   },
 
   async getPatientAppointments(): Promise<Appointment[]> {
-    const response = await fetch(`${API_URL}/appointments/patient/`, {
-      credentials:'include'
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to fetch patient appointments');
-    }
-    console.log("patiend appointmens",response);
-    return response.json();
+    const response = await axiosInstance.get('/appointments/patient/');
+    console.log("patient appointments", response);
+    return response.data;
   },
-
 
   async updateAppointment(appointmentId: string, appointmentData: Partial<Appointment>): Promise<Appointment> {
-     const response = await fetch(`${API_URL}/appointments/${appointmentId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials:'include',
-      body: JSON.stringify(appointmentData)
-    });
-
-    return response.json();
+    const response = await axiosInstance.put(`/appointments/${appointmentId}`, appointmentData);
+    return response.data;
   },
 
-
   async updateAppointmentStatus(appointmentId: string, status: string): Promise<Appointment> {
-    const response = await fetch(`${API_URL}/appointments/${appointmentId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials:"include",
-      body: JSON.stringify({ status })
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to update appointment status');
-    }
-
-    return response.json();
+    const response = await axiosInstance.put(`/appointments/${appointmentId}`, { status });
+    return response.data;
   }
 };

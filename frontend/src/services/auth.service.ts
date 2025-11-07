@@ -68,7 +68,10 @@ export const authService = {
     }
 
     const response = await fetch(`${API_URL}/auth/me`, {
-      credentials:'include'
+      credentials:'include',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
 
     if (!response.ok) {
