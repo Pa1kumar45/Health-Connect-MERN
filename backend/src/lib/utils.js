@@ -12,9 +12,8 @@ export const generateToken = (userId, role,res) => {
       res.cookie('token',token,{
          maxAge:7*24*60*60*1000,
          httpOnly:true,
-         sameSite:'strict',
-        //  secure:false,
-         secure:true
+         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Allow cross-origin in production
+         secure: process.env.NODE_ENV === 'production' // HTTPS required for sameSite=none
       });
   
       return token;
