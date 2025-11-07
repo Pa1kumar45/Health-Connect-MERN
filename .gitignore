@@ -17,6 +17,7 @@ dist-ssr/
 build/
 .vercel/
 .cache/
+*.local
 
 # Logs
 *.log

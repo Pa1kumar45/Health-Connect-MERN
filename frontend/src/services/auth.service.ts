@@ -26,6 +26,12 @@ export const authService = {
     }
     const result = await response.json();
     console.log("registration complete ",result)
+    
+    // Store token in localStorage for Authorization header
+    if (result.token) {
+      localStorage.setItem('token', result.token);
+    }
+    
     return result;
   },
 
@@ -46,6 +52,12 @@ export const authService = {
     }
 
     const result = await response.json();
+    
+    // Store token in localStorage for Authorization header
+    if (result.token) {
+      localStorage.setItem('token', result.token);
+    }
+    
     return result;
   },
 
