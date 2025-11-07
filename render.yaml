@@ -1,0 +1,22 @@
+# Render deployment configuration
+# This file is optional but helps with automated deployments
+
+services:
+  # Backend Web Service
+  - type: web
+    name: health-connect-backend
+    runtime: node
+    region: oregon # Change to your preferred region
+    plan: free # or 'starter' for $7/month (no sleep)
+    branch: main
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      # Add other environment variables in Render Dashboard
+      # (MONGODB_URI, JWT_SECRET, CLOUDINARY_*, FRONTEND_URL)
