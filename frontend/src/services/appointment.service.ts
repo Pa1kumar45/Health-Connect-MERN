@@ -6,7 +6,8 @@ export const appointmentService = {
     console.log("appointment data", appointmentData);
     const response = await axiosInstance.post('/appointments/', appointmentData);
     console.log("handle submit response", response);
-    return response.data;
+    // Backend returns {data: appointment}, so return response.data.data
+    return response.data.data || response.data;
   },
 
   async getDoctorAppointments(): Promise<Appointment[]> {

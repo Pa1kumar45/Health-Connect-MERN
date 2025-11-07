@@ -50,10 +50,9 @@ const DoctorPage: React.FC = () => {
   };
 
 
-  const handleBookAppointment = async () => {
-    //using this prevents refreshing the page after submit as this is part of the form compoent
-    //so we can check what is happenning as the code runs
-    // e.preventDefault();
+  const handleBookAppointment = async (e: React.FormEvent) => {
+    // Prevent form from refreshing the page
+    e.preventDefault();
 
     if (!doctor || !appointment) return;
 
@@ -68,10 +67,25 @@ const DoctorPage: React.FC = () => {
         reason: appointment.reason,
       };
       const response = await appointmentService.addAppointment(appointmentData);
-      console.log("handle submit response",response);
+      console.log("handle submit response", response);
+      
+      // Show success message
+      alert('Appointment booked successfully!');
+      
+      // Reset form or redirect
+      setAppointment({
+        date: `${new Date()}`,
+        startTime: '',
+        endTime: '',
+        status: 'pending',
+        mode: 'chat',
+        reason: 'Checkup',
+      });
      
     } catch (err) {
+      console.error('Appointment booking error:', err);
       setError('Failed to book appointment');
+      alert('Failed to book appointment. Please try again.');
     }
   };
 
