@@ -1,18 +1,10 @@
 # 🎯 Deployment Checklist - Health-Connect MERN App# 📋 Pre-Deployment Checklist - Health-Connect
 
-
-
 Use this checklist to ensure successful deployment from scratch.Use this checklist to ensure everything is ready before deploying to production.
 
-
-
-------
-
-
+---
 
 ## 📦 **Phase 1: Pre-Deployment Preparation**## 🔍 Code Review
-
-
 
 ### **Local Environment Cleanup**### Backend
 
@@ -52,7 +44,7 @@ Use this checklist to ensure successful deployment from scratch.Use this checkli
 
 - [ ] Commit cleanup changes:---
 
-  ```powershell
+  ````powershell
 
   git add .## 🔐 Security
 
@@ -60,13 +52,17 @@ Use this checklist to ensure successful deployment from scratch.Use this checkli
 
   ```- [ ] `.env` files not committed to Git (.gitignore configured)
 
+  ````
+
 - [ ] Push to GitHub:- [ ] Strong JWT secret generated (32+ characters)
 
-  ```powershell- [ ] Password hashing implemented (bcrypt)
+  ````powershell- [ ] Password hashing implemented (bcrypt)
 
   git push origin main- [ ] HTTP-only cookies for authentication
 
   ```- [ ] CORS whitelist configured (not using '\*')
+
+  ````
 
 - [ ] Input sanitization to prevent MongoDB injection
 
@@ -104,21 +100,18 @@ Use this checklist to ensure successful deployment from scratch.Use this checkli
 
   - [ ] Copy connection string (will use in Render):
 
-    ```## ☁️ Cloud Services
+    ````## ☁️ Cloud Services
 
     mongodb+srv://ppk:ppk@cluster0.exakobi.mongodb.net/?appName=Cluster0
 
     ```### MongoDB Atlas
-
-
+    ````
 
 ---- [ ] Account created
 
 - [ ] Cluster running
 
 ## ☁️ **Phase 3: Cloud Services Setup**- [ ] Connection string saved securely
-
-
 
 ### **Cloudinary (Image Hosting)**### Cloudinary
 
@@ -146,19 +139,13 @@ Use this checklist to ensure successful deployment from scratch.Use this checkli
 
 ---- [ ] Payment method added (if using paid tier)
 
-
-
 ## 🖥️ **Phase 4: Backend Deployment (Render)**---
-
-
 
 ### **Render Account Setup**## 📦 Environment Variables
 
 - [ ] Sign up/login at [Render](https://dashboard.render.com/)
 
 - [ ] Connect GitHub account### Backend Variables
-
-
 
 ### **Create Web Service**- [ ] `PORT` set (default: 5000)
 
@@ -184,8 +171,6 @@ Use this checklist to ensure successful deployment from scratch.Use this checkli
 
   - **Instance Type:** Free- [ ] `VITE_BACKEND_URL` set to deployed backend URL
 
-
-
 ### **Environment Variables (Render)**---
 
 Click "Advanced" → Add these variables:
@@ -208,8 +193,6 @@ Click "Advanced" → Add these variables:
 
 - [ ] `FRONTEND_URL` = `TEMP_VALUE` (update after frontend deployment)- [ ] All tests pass (if tests exist)
 
-
-
 ### **Deploy Backend**### Production Build Test
 
 - [ ] Click "Create Web Service"
@@ -222,15 +205,9 @@ Click "Advanced" → Add these variables:
 
 - [ ] Test backend: Visit URL → Should see "Hello from the backend!"- [ ] Build artifacts are under size limits
 
-
-
-------
-
-
+---
 
 ## 🌐 **Phase 5: Frontend Deployment (Vercel)**## 🧪 Functionality Testing
-
-
 
 ### **Vercel Account Setup**### Authentication
 
@@ -270,7 +247,7 @@ Click "Environment Variables" → Add:- [ ] Real-time chat works (messages appea
 
 - [ ] `VITE_BACKEND_URL` = `https://health-connect-backend.onrender.com`- [ ] Image uploads work (profile pictures, chat images)
 
-  *(Use your actual Render URL from Phase 4)*
+  _(Use your actual Render URL from Phase 4)_
 
 ### Edge Cases
 
@@ -304,7 +281,7 @@ Click "Environment Variables" → Add:- [ ] Real-time chat works (messages appea
 
 - [ ] Update to: `https://health-connect-mern.vercel.app`- [ ] Repository pushed to GitHub
 
-  *(Use your actual Vercel URL from Phase 5)*- [ ] `.gitignore` configured correctly
+  _(Use your actual Vercel URL from Phase 5)_- [ ] `.gitignore` configured correctly
 
 - [ ] Click "Save Changes"- [ ] No `.env` files in repository
 
@@ -478,8 +455,6 @@ After deployment, run these tests on your live app:
 
 - [ ] Verify both apps use HTTPS (Vercel/Render auto-provide)10. [ ] Initiate video call (test in two browsers)
 
-
-
 ### **If MongoDB Connection Fails:**### Cross-Browser Testing
 
 - [ ] Check MongoDB Atlas Network Access → 0.0.0.0/0 whitelisted
@@ -640,20 +615,15 @@ Whenever you push code changes:- [ ] `DEPLOYMENT.md` guide reviewed
 
 3. **Document**: Note any issues and resolutions
 
-**Deployment Date:** _____________  4. **Iterate**: Plan for future improvements
+**Deployment Date:** ******\_****** 4. **Iterate**: Plan for future improvements
 
-**Deployed By:** _____________  
+**Deployed By:** ******\_******
 
 **Status:** ⬜ In Progress | ⬜ Completed | ⬜ Live---
 
-
-
 ---## 🎉 Congratulations!
 
-
-
 **Congratulations! Your app is now live! 🎉**Your Health-Connect app is now live! 🚀
-
 
 **Live URLs**:
 
@@ -669,6 +639,6 @@ Whenever you push code changes:- [ ] `DEPLOYMENT.md` guide reviewed
 
 ---
 
-**Date Deployed**: ******\_\_\_******  
-**Deployed By**: ******\_\_\_******  
-**Version**: ******\_\_\_******
+**Date Deployed**: **\*\***\_\_\_**\*\***  
+**Deployed By**: **\*\***\_\_\_**\*\***  
+**Version**: **\*\***\_\_\_**\*\***

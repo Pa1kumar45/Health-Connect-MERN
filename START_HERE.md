@@ -4,12 +4,12 @@
 
 ### **📖 Documentation Files (Choose Your Path)**
 
-| File | Best For | Time Required |
-|------|----------|---------------|
-| **[DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md)** | Quick overview & 5-step guide | 5 minutes |
-| **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** | Complete tutorial with troubleshooting | 20-30 minutes |
-| **[DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)** | Step-by-step interactive checklist | Follow along |
-| **[CLEANUP.md](./CLEANUP.md)** | Files to remove before deployment | Pre-deployment |
+| File                                                     | Best For                               | Time Required  |
+| -------------------------------------------------------- | -------------------------------------- | -------------- |
+| **[DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md)**     | Quick overview & 5-step guide          | 5 minutes      |
+| **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)**         | Complete tutorial with troubleshooting | 20-30 minutes  |
+| **[DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)** | Step-by-step interactive checklist     | Follow along   |
+| **[CLEANUP.md](./CLEANUP.md)**                           | Files to remove before deployment      | Pre-deployment |
 
 ---
 
@@ -72,13 +72,13 @@ git push origin main
 
 ## 💰 Cost Breakdown
 
-| Service | Free Tier | Your Usage |
-|---------|-----------|------------|
-| Render (Backend) | 750 hours/month | ✅ Free |
-| Vercel (Frontend) | 100GB bandwidth | ✅ Free |
-| MongoDB Atlas | 512MB storage | ✅ Free |
-| Cloudinary | 25GB bandwidth | ✅ Free |
-| **TOTAL** | | **$0/month** |
+| Service           | Free Tier       | Your Usage   |
+| ----------------- | --------------- | ------------ |
+| Render (Backend)  | 750 hours/month | ✅ Free      |
+| Vercel (Frontend) | 100GB bandwidth | ✅ Free      |
+| MongoDB Atlas     | 512MB storage   | ✅ Free      |
+| Cloudinary        | 25GB bandwidth  | ✅ Free      |
+| **TOTAL**         |                 | **$0/month** |
 
 ---
 

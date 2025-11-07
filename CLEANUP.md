@@ -3,6 +3,7 @@
 This file lists potentially unwanted files in your project that should be cleaned up before deployment.
 
 ## ✅ Files to Keep
+
 - All source code files (`.js`, `.ts`, `.tsx`)
 - Configuration files (`package.json`, `tsconfig.json`, `vite.config.ts`)
 - Documentation (`README.md`)
@@ -12,12 +13,14 @@ This file lists potentially unwanted files in your project that should be cleane
 ## ❌ Files to Remove
 
 ### 1. **Sensitive Files**
+
 ```
 backend/.env          # CRITICAL: Contains real credentials!
 frontend/.env         # If it exists with production values
 ```
 
 **Action:** These should be removed from Git tracking:
+
 ```powershell
 git rm --cached backend/.env
 git rm --cached frontend/.env
@@ -25,16 +28,19 @@ git commit -m "Remove sensitive environment files"
 ```
 
 ### 2. **Temporary/Working Files**
+
 ```
 temp.txt              # Found in root - appears to be a working file
 ```
 
 **Action:** Delete if not needed:
+
 ```powershell
 Remove-Item "temp.txt" -Force
 ```
 
 ### 3. **Build Artifacts** (if present)
+
 ```
 frontend/dist/
 frontend/build/
@@ -45,6 +51,7 @@ node_modules/         # Don't commit these!
 **Action:** These should already be in `.gitignore` (now updated)
 
 ### 4. **Editor/IDE Files** (if present)
+
 ```
 .vscode/settings.json (if it has personal settings)
 .idea/
@@ -57,6 +64,7 @@ Thumbs.db
 **Action:** Covered by updated `.gitignore`
 
 ### 5. **Logs** (if present)
+
 ```
 *.log
 npm-debug.log*

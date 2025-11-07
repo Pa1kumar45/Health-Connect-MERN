@@ -3,6 +3,7 @@
 ## ✅ What's Been Done For You
 
 ### **Files Created:**
+
 1. ✅ `DEPLOYMENT_GUIDE.md` - Complete step-by-step deployment instructions
 2. ✅ `DEPLOYMENT_CHECKLIST.md` - Interactive checklist with all phases
 3. ✅ `CLEANUP.md` - Files to remove before deployment
@@ -17,6 +18,7 @@
 ## 🎯 Quick Start (5 Steps)
 
 ### **Step 1: Clean Up Sensitive Files**
+
 ```powershell
 # Navigate to project root
 cd "c:\Users\Home\Desktop\INTERNSHIP\Intern- Health-Connect(working video, chat)\Health-Connect"
@@ -34,6 +36,7 @@ git push origin main
 ```
 
 ### **Step 2: Deploy Backend (Render)**
+
 1. Go to https://dashboard.render.com/
 2. Click "New +" → "Web Service"
 3. Connect GitHub → Select `Health-Connect-MERN`
@@ -46,6 +49,7 @@ git push origin main
 7. **Copy your backend URL:** `https://your-app.onrender.com`
 
 ### **Step 3: Deploy Frontend (Vercel)**
+
 1. Go to https://vercel.com/dashboard
 2. Click "Add New..." → "Project"
 3. Import `Health-Connect-MERN` repository
@@ -58,12 +62,14 @@ git push origin main
 7. **Copy your frontend URL:** `https://your-app.vercel.app`
 
 ### **Step 4: Update Backend CORS**
+
 1. Go to Render Dashboard → Your backend service
 2. Click "Environment"
 3. Edit `FRONTEND_URL` → Set to your Vercel URL
 4. Save (auto-redeploys)
 
 ### **Step 5: Test Everything**
+
 - ✅ Registration works
 - ✅ Login works
 - ✅ Chat works (real-time)
@@ -74,19 +80,20 @@ git push origin main
 
 ## 📚 Documentation Files
 
-| File | Purpose | When to Use |
-|------|---------|-------------|
-| **DEPLOYMENT_GUIDE.md** | Complete tutorial with troubleshooting | First-time deployment |
-| **DEPLOYMENT_CHECKLIST.md** | Phase-by-phase interactive checklist | Step-by-step deployment |
-| **CLEANUP.md** | Files to remove before deployment | Pre-deployment cleanup |
-| **backend/.env.example** | Environment variable template | Setting up local dev |
-| **frontend/.env.example** | Frontend env template | Setting up local dev |
+| File                        | Purpose                                | When to Use             |
+| --------------------------- | -------------------------------------- | ----------------------- |
+| **DEPLOYMENT_GUIDE.md**     | Complete tutorial with troubleshooting | First-time deployment   |
+| **DEPLOYMENT_CHECKLIST.md** | Phase-by-phase interactive checklist   | Step-by-step deployment |
+| **CLEANUP.md**              | Files to remove before deployment      | Pre-deployment cleanup  |
+| **backend/.env.example**    | Environment variable template          | Setting up local dev    |
+| **frontend/.env.example**   | Frontend env template                  | Setting up local dev    |
 
 ---
 
 ## 🔐 Environment Variables You Need
 
 ### **Backend (Render):**
+
 ```env
 MONGODB_URI=mongodb+srv://ppk:ppk@cluster0.exakobi.mongodb.net/?appName=Cluster0
 JWT_SECRET=c2ab6104df0e5b289719499f605ecaf42288162b3ab706a84a0201cfdab73a30
@@ -99,6 +106,7 @@ FRONTEND_URL=https://your-vercel-url.vercel.app
 ```
 
 ### **Frontend (Vercel):**
+
 ```env
 VITE_BACKEND_URL=https://your-render-url.onrender.com
 ```
@@ -110,10 +118,12 @@ VITE_BACKEND_URL=https://your-render-url.onrender.com
 ### **MUST FIX BEFORE DEPLOYMENT:**
 
 1. **`.env` file with real credentials in repository**
+
    - Contains MongoDB password, JWT secret, Cloudinary keys
    - **Action:** Remove from Git tracking (see Step 1 above)
 
 2. **Weak MongoDB credentials**
+
    - Username: `ppk`, Password: `ppk`
    - **Recommendation:** Change in MongoDB Atlas for production
 
@@ -133,12 +143,14 @@ VITE_BACKEND_URL=https://your-render-url.onrender.com
 ## ✨ Code Quality - Already Good!
 
 ✅ **Backend:**
+
 - Uses environment variables (no hardcoded URLs)
 - CORS properly configured
 - MongoDB connection uses env vars
 - Socket.IO configured correctly
 
 ✅ **Frontend:**
+
 - Uses `VITE_BACKEND_URL` environment variable
 - No hardcoded localhost references
 - Axios configured with `withCredentials: true`
@@ -147,12 +159,12 @@ VITE_BACKEND_URL=https://your-render-url.onrender.com
 
 ## 🎯 Deployment Targets
 
-| Component | Platform | Cost |
-|-----------|----------|------|
-| **Frontend** | Vercel | Free |
-| **Backend** | Render | Free (sleeps after 15min) |
-| **Database** | MongoDB Atlas | Free (512MB) |
-| **Images** | Cloudinary | Free (25GB) |
+| Component    | Platform      | Cost                      |
+| ------------ | ------------- | ------------------------- |
+| **Frontend** | Vercel        | Free                      |
+| **Backend**  | Render        | Free (sleeps after 15min) |
+| **Database** | MongoDB Atlas | Free (512MB)              |
+| **Images**   | Cloudinary    | Free (25GB)               |
 
 ---
 
@@ -169,13 +181,13 @@ VITE_BACKEND_URL=https://your-render-url.onrender.com
 
 ## 🐛 Common Issues (Quick Fixes)
 
-| Issue | Solution |
-|-------|----------|
-| **CORS Error** | Check `FRONTEND_URL` in Render matches Vercel URL exactly |
-| **Cookie not set** | Verify both apps use HTTPS (auto-provided) |
-| **MongoDB fails** | Check Network Access → Allow 0.0.0.0/0 |
-| **Socket.IO fails** | Check `VITE_BACKEND_URL` points to Render backend |
-| **Video fails** | Ensure HTTPS, allow camera/mic permissions |
+| Issue               | Solution                                                  |
+| ------------------- | --------------------------------------------------------- |
+| **CORS Error**      | Check `FRONTEND_URL` in Render matches Vercel URL exactly |
+| **Cookie not set**  | Verify both apps use HTTPS (auto-provided)                |
+| **MongoDB fails**   | Check Network Access → Allow 0.0.0.0/0                    |
+| **Socket.IO fails** | Check `VITE_BACKEND_URL` points to Render backend         |
+| **Video fails**     | Ensure HTTPS, allow camera/mic permissions                |
 
 ---
 

@@ -1,6 +1,7 @@
 # 🚀 Health-Connect - Complete Deployment Guide (From Scratch)
 
 ## 📋 **Table of Contents**
+
 1. [Prerequisites](#prerequisites)
 2. [Pre-Deployment Cleanup](#pre-deployment-cleanup)
 3. [Backend Deployment (Render)](#backend-deployment-render)
@@ -16,6 +17,7 @@
 Before starting deployment, ensure you have:
 
 ### **Accounts Required:**
+
 - [ ] GitHub account (for code repository)
 - [ ] Vercel account (frontend hosting) - Sign up at https://vercel.com
 - [ ] Render account (backend hosting) - Sign up at https://render.com
@@ -23,11 +25,13 @@ Before starting deployment, ensure you have:
 - [ ] Cloudinary account (image hosting) - Sign up at https://cloudinary.com
 
 ### **Local Tools:**
+
 - [ ] Git installed
 - [ ] Node.js (v18+) installed
 - [ ] Code editor (VS Code recommended)
 
 ### **Services Already Setup (from your .env):**
+
 - [x] MongoDB Atlas: `mongodb+srv://ppk:ppk@cluster0.exakobi.mongodb.net/`
 - [x] Cloudinary: Cloud name `dfjrbwspn`, API key available
 - [x] JWT Secret: Generated
@@ -141,11 +145,13 @@ git push -u origin main
 1. **Go to Render Dashboard:** https://dashboard.render.com/
 2. **Click "New +" → "Web Service"**
 3. **Connect GitHub:**
+
    - Click "Connect GitHub"
    - Select your repository: `Health-Connect-MERN`
    - Click "Connect"
 
 4. **Configure Service:**
+
    ```
    Name: health-connect-backend
    Region: Choose closest to you (e.g., Oregon for US)
@@ -176,6 +182,7 @@ git push -u origin main
 6. **Click "Create Web Service"**
 
 7. **Wait for Deployment** (5-10 minutes)
+
    - Render will clone your repo, install dependencies, and start the server
    - You'll get a URL like: `https://health-connect-backend.onrender.com`
 
@@ -231,11 +238,13 @@ dist-ssr
 1. **Go to Vercel Dashboard:** https://vercel.com/dashboard
 2. **Click "Add New..." → "Project"**
 3. **Import Git Repository:**
+
    - Click "Import Git Repository"
    - Select `Health-Connect-MERN`
    - Click "Import"
 
 4. **Configure Project:**
+
    ```
    Framework Preset: Vite
    Root Directory: frontend
@@ -274,6 +283,7 @@ Now that you have your Vercel URL, update the backend:
 ## 🔐 **Environment Variables Setup Summary**
 
 ### **Backend (Render):**
+
 ```env
 MONGODB_URI=mongodb+srv://ppk:ppk@cluster0.exakobi.mongodb.net/?appName=Cluster0
 JWT_SECRET=c2ab6104df0e5b289719499f605ecaf42288162b3ab706a84a0201cfdab73a30
@@ -286,6 +296,7 @@ FRONTEND_URL=https://your-app.vercel.app  👈 UPDATE THIS!
 ```
 
 ### **Frontend (Vercel):**
+
 ```env
 VITE_BACKEND_URL=https://health-connect-backend.onrender.com  👈 UPDATE THIS!
 ```
@@ -295,40 +306,47 @@ VITE_BACKEND_URL=https://health-connect-backend.onrender.com  👈 UPDATE THIS!
 ## ✅ **Post-Deployment Testing**
 
 ### **Test 1: Backend API**
+
 ```
 Visit: https://health-connect-backend.onrender.com
 Expected: "Hello from the backend!"
 ```
 
 ### **Test 2: Frontend Loading**
+
 ```
 Visit: https://health-connect-mern.vercel.app
 Expected: Your React app loads (login/signup page)
 ```
 
 ### **Test 3: Registration**
+
 1. Go to frontend → Sign Up
 2. Fill form → Submit
 3. Check browser console (F12) for errors
 4. Expected: User created, redirected to dashboard
 
 ### **Test 4: Login**
+
 1. Use registered credentials
 2. Submit login form
 3. Expected: JWT cookie set, user logged in
 
 ### **Test 5: Doctor Directory**
+
 1. Login as patient
 2. Navigate to "Find Doctors"
 3. Expected: Doctors list loads (if any exist)
 
 ### **Test 6: Real-time Chat**
+
 1. Login as doctor (one tab) and patient (another tab)
 2. Start chat
 3. Send message
 4. Expected: Message appears instantly in both tabs
 
 ### **Test 7: Video Call**
+
 1. Login as doctor and patient (separate browsers)
 2. Click "Start Video Call"
 3. Accept call
@@ -343,6 +361,7 @@ Expected: Your React app loads (login/signup page)
 **Error:** `Access to XMLHttpRequest blocked by CORS policy`
 
 **Solution:**
+
 1. Check `FRONTEND_URL` in Render matches your Vercel URL **exactly**
 2. No trailing slash: `https://app.vercel.app` ✅ NOT `https://app.vercel.app/` ❌
 3. Redeploy backend after changing
@@ -352,6 +371,7 @@ Expected: Your React app loads (login/signup page)
 **Error:** JWT cookie not sent to backend
 
 **Solution:**
+
 1. Verify `withCredentials: true` in `frontend/src/utils/axios.ts`
 2. Check backend CORS includes `credentials: true`
 3. Verify `sameSite: 'none'` and `secure: true` in cookie settings
@@ -362,6 +382,7 @@ Expected: Your React app loads (login/signup page)
 **Error:** `MongoServerError: bad auth`
 
 **Solution:**
+
 1. Check MongoDB Atlas → Database Access → User has correct password
 2. Check Network Access → 0.0.0.0/0 is whitelisted
 3. Verify `MONGODB_URI` in Render environment variables
@@ -372,6 +393,7 @@ Expected: Your React app loads (login/signup page)
 **Error:** `Invalid signature`
 
 **Solution:**
+
 1. Verify all 3 Cloudinary variables in Render:
    - `CLOUDINARY_CLOUD_NAME`
    - `CLOUDINARY_API_KEY`
@@ -384,6 +406,7 @@ Expected: Your React app loads (login/signup page)
 **Error:** `WebSocket connection failed`
 
 **Solution:**
+
 1. Check `VITE_BACKEND_URL` in Vercel points to Render backend
 2. Verify backend Socket.IO CORS allows frontend origin
 3. Check browser console for WebSocket errors
@@ -394,6 +417,7 @@ Expected: Your React app loads (login/signup page)
 **Error:** `getUserMedia failed` or `ICE connection failed`
 
 **Solution:**
+
 1. Ensure HTTPS is used (WebRTC requires secure context)
 2. Allow camera/microphone permissions in browser
 3. Check STUN servers are accessible (Google STUN servers)
@@ -404,6 +428,7 @@ Expected: Your React app loads (login/signup page)
 **Problem:** Backend sleeps after 15 minutes of inactivity
 
 **Solution:**
+
 1. **Accept it** (wake-up takes ~30 seconds on first request)
 2. **Upgrade to paid tier** ($7/month - no sleep)
 3. **Use cron job** to ping backend every 14 minutes (keeps it awake)
@@ -413,6 +438,7 @@ Expected: Your React app loads (login/signup page)
 **Error:** TypeScript compilation errors
 
 **Solution:**
+
 1. Run `npm run build` locally first
 2. Fix all TypeScript errors
 3. Push fixes to GitHub
@@ -439,6 +465,7 @@ git push origin main
 ```
 
 ### **Manual Redeploy:**
+
 - **Vercel:** Dashboard → Deployments → Redeploy
 - **Render:** Dashboard → Manual Deploy → Deploy latest commit
 
@@ -447,18 +474,21 @@ git push origin main
 ## 📊 **Monitoring & Logs**
 
 ### **Render Logs:**
+
 1. Go to Render Dashboard → Your service
 2. Click "Logs" tab
 3. View real-time server logs
 4. Check for errors: `MongoServerError`, `CORS`, etc.
 
 ### **Vercel Logs:**
+
 1. Go to Vercel Dashboard → Your project
 2. Click "Deployments"
 3. Click on latest deployment → "View Function Logs"
 4. Check build logs for errors
 
 ### **MongoDB Atlas Monitoring:**
+
 1. Go to MongoDB Atlas → Cluster
 2. Click "Metrics"
 3. View connections, operations, storage
@@ -467,15 +497,16 @@ git push origin main
 
 ## 💰 **Cost Summary**
 
-| Service | Free Tier | Usage | Cost |
-|---------|-----------|-------|------|
-| **Vercel** | 100GB bandwidth, unlimited deployments | Frontend hosting | $0 |
-| **Render** | 750 hours/month, sleeps after 15min | Backend hosting | $0 |
-| **MongoDB Atlas** | 512MB storage, shared cluster | Database | $0 |
-| **Cloudinary** | 25GB bandwidth, 25GB storage | Image hosting | $0 |
-| **TOTAL** | | | **$0/month** |
+| Service           | Free Tier                              | Usage            | Cost         |
+| ----------------- | -------------------------------------- | ---------------- | ------------ |
+| **Vercel**        | 100GB bandwidth, unlimited deployments | Frontend hosting | $0           |
+| **Render**        | 750 hours/month, sleeps after 15min    | Backend hosting  | $0           |
+| **MongoDB Atlas** | 512MB storage, shared cluster          | Database         | $0           |
+| **Cloudinary**    | 25GB bandwidth, 25GB storage           | Image hosting    | $0           |
+| **TOTAL**         |                                        |                  | **$0/month** |
 
 **For Production (No Sleep, Better Performance):**
+
 - Render Starter: $7/month
 - MongoDB M10: $9/month (optional, better performance)
 - **Total:** ~$16-20/month
@@ -513,6 +544,7 @@ Share your app, test thoroughly, and enjoy! 🎉
 ## 📞 **Need Help?**
 
 Common debugging steps:
+
 1. Check browser console (F12) for frontend errors
 2. Check Render logs for backend errors
 3. Verify environment variables (no typos, no extra spaces)
