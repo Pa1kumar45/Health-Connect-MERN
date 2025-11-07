@@ -102,15 +102,20 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     peerConnection.oniceconnectionstatechange = () => {
       console.log('ICE connection state:', peerConnection.iceConnectionState);
       
-      // Only cleanup on failed or closed states
-      // 'disconnected' can be temporary during connection, so we ignore it
-      if (
-        peerConnection.iceConnectionState === 'failed' ||
-        peerConnection.iceConnectionState === 'closed'
-      ) {
-        console.log('ICE connection failed or closed');
+      if (peerConnection.iceConnectionState === 'connected' || 
+          peerConnection.iceConnectionState === 'completed') {
+        console.log('ICE connection established successfully');
+        setCallStatus('connected');
+      }
+      
+      // Only cleanup on truly failed states, not on temporary disconnections
+      if (peerConnection.iceConnectionState === 'failed') {
+        console.log('ICE connection failed permanently');
         cleanupCall();
       }
+      
+      // Don't cleanup on 'disconnected' - it might reconnect
+      // Don't cleanup on 'closed' here - it will be handled by endCall
     };
     
     peerConnection.ontrack = (event) => {
@@ -134,11 +139,32 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setCallStatus('calling');
       setIsInCall(true);
       
-      // Get local media stream
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true, 
-        audio: true 
-      });
+      // Get local media stream with better error handling
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: true, 
+          audio: true 
+        });
+        console.log('User media obtained successfully');
+      } catch (mediaError: any) {
+        console.error('Error getting user media:', mediaError);
+        
+        // Provide specific error messages
+        if (mediaError.name === 'NotReadableError') {
+          alert('Camera or microphone is already in use. Please close other apps using your camera/mic and try again.');
+        } else if (mediaError.name === 'NotAllowedError') {
+          alert('Camera and microphone permissions are required. Please allow access and try again.');
+        } else if (mediaError.name === 'NotFoundError') {
+          alert('No camera or microphone found. Please connect a device and try again.');
+        } else {
+          alert(`Error accessing camera/microphone: ${mediaError.message}`);
+        }
+        
+        cleanupCall();
+        return;
+      }
+      
       setLocalStream(stream);
       
       // Create new peer connection
@@ -192,6 +218,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       
     } catch (error) {
       console.error('Error starting call:', error);
+      alert('Failed to start call. Please try again.');
       cleanupCall();
     }
   };
@@ -200,18 +227,40 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const answerCall = async () => {
     if (!socket || !callerId || !pendingOfferRef.current) {
       console.error('Cannot answer call: missing required data');
+      alert('Call data is missing. Please try again.');
+      cleanupCall();
       return;
     }
     
     try {
       console.log('Answering call from:', callerId);
-      setCallStatus('connected');
       
-      // Get local media
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
+      // Get local media with better error handling
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true
+        });
+        console.log('User media obtained successfully');
+      } catch (mediaError: any) {
+        console.error('Error getting user media:', mediaError);
+        
+        // Provide specific error messages
+        if (mediaError.name === 'NotReadableError') {
+          alert('Camera or microphone is already in use. Please close other apps using your camera/mic and try again.');
+        } else if (mediaError.name === 'NotAllowedError') {
+          alert('Camera and microphone permissions are required. Please allow access and try again.');
+        } else if (mediaError.name === 'NotFoundError') {
+          alert('No camera or microphone found. Please connect a device and try again.');
+        } else {
+          alert(`Error accessing camera/microphone: ${mediaError.message}`);
+        }
+        
+        cleanupCall();
+        return;
+      }
+      
       setLocalStream(stream);
       
       // Create peer connection
@@ -246,8 +295,15 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       pendingCandidatesRef.current = [];
       
+      // Update state to show in-call
+      setIsInCall(true);
+      setCallStatus('connected');
+      
+      console.log('Call answered successfully');
+      
     } catch (error) {
       console.error('Error answering call:', error);
+      alert('Failed to answer call. Please try again.');
       cleanupCall();
     }
   };
