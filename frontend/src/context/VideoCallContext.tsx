@@ -190,31 +190,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         offer: peerConnection.localDescription
       });
       
-      // Set up socket listeners for this call
-      socket.once('call-answered', async (data) => {
-        if (!peerConnectionRef.current) return;
-        
-        console.log('Call answered, setting remote description');
-        try {
-          await peerConnectionRef.current.setRemoteDescription(
-            new RTCSessionDescription(data.answer)
-          );
-          
-          setCallStatus('connected');
-          
-          // Apply any pending ICE candidates
-          pendingCandidatesRef.current.forEach(candidate => {
-            if (peerConnectionRef.current) {
-              peerConnectionRef.current.addIceCandidate(candidate);
-            }
-          });
-          pendingCandidatesRef.current = [];
-          
-        } catch (error) {
-          console.error('Error setting remote description:', error);
-          cleanupCall();
-        }
-      });
+      console.log('Waiting for call answer...');
       
     } catch (error) {
       console.error('Error starting call:', error);
@@ -374,8 +350,42 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       cleanupCall();
     };
     
+    // Handle call answered (when remote peer accepts the call)
+    const handleCallAnswered = async (data: { answer: RTCSessionDescriptionInit }) => {
+      console.log('Received call answer from remote peer');
+      
+      if (!peerConnectionRef.current) {
+        console.log('No peer connection available');
+        return;
+      }
+      
+      try {
+        console.log('Setting remote description from answer');
+        await peerConnectionRef.current.setRemoteDescription(
+          new RTCSessionDescription(data.answer)
+        );
+        
+        console.log('Remote description set successfully');
+        setCallStatus('connected');
+        
+        // Apply any pending ICE candidates
+        console.log('Applying pending ICE candidates:', pendingCandidatesRef.current.length);
+        pendingCandidatesRef.current.forEach(candidate => {
+          if (peerConnectionRef.current) {
+            peerConnectionRef.current.addIceCandidate(candidate);
+          }
+        });
+        pendingCandidatesRef.current = [];
+        
+      } catch (error) {
+        console.error('Error handling call answer:', error);
+        cleanupCall();
+      }
+    };
+    
     // Register event listeners
     socket.on('call-made', handleCallOffer);
+    socket.on('call-answered', handleCallAnswered);
     socket.on('ice-candidate', handleIceCandidate);
     socket.on('call-end', handleCallEnd);
     socket.on('call-rejected', handleCallRejected);
@@ -383,6 +393,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     // Cleanup event listeners
     return () => {
       socket.off('call-made', handleCallOffer);
+      socket.off('call-answered', handleCallAnswered);
       socket.off('ice-candidate', handleIceCandidate);
       socket.off('call-end', handleCallEnd);
       socket.off('call-rejected', handleCallRejected);
