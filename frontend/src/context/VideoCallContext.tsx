@@ -35,6 +35,12 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const pendingCandidatesRef = useRef<RTCIceCandidate[]>([]);
   const pendingOfferRef = useRef<RTCSessionDescriptionInit | null>(null);
+  const callerIdRef = useRef<string | null>(null);
+  
+  // Sync callerId state with ref
+  useEffect(() => {
+    callerIdRef.current = callerId;
+  }, [callerId]);
 
 
   useEffect(() => {
@@ -90,10 +96,10 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     
     // Set up event handlers
     peerConnection.onicecandidate = ({ candidate }) => {
-      if (candidate && socket && callerId) {
+      if (candidate && socket && callerIdRef.current) {
         console.log('Sending ICE candidate:', candidate);
         socket.emit('ice-candidate', {
-          to: callerId,
+          to: callerIdRef.current,
           candidate
         });
       }
