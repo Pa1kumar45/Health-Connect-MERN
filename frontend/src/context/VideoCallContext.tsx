@@ -364,8 +364,16 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       console.log('Received call answer from remote peer');
       console.log('Answer SDP:', data.answer.sdp?.substring(0, 200));
       
+      // Wait a bit for peer connection to be set up if needed
+      let retries = 0;
+      while (!peerConnectionRef.current && retries < 10) {
+        console.log('Waiting for peer connection... retry', retries);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        retries++;
+      }
+      
       if (!peerConnectionRef.current) {
-        console.log('No peer connection available');
+        console.error('No peer connection available after waiting');
         return;
       }
       
