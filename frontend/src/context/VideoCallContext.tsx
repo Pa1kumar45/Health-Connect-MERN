@@ -243,19 +243,28 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const peerConnection = createPeerConnection();
       peerConnectionRef.current = peerConnection;
       
-      // Add local tracks
+      // Add local tracks to peer connection
+      console.log('Adding local tracks to peer connection');
       stream.getTracks().forEach(track => {
+        console.log(`Adding ${track.kind} track:`, track.id);
         peerConnection.addTrack(track, stream);
       });
       
+      console.log('Peer connection has', peerConnection.getSenders().length, 'senders');
+      
       // Set the remote description (offer)
+      console.log('Setting remote description from offer');
       await peerConnection.setRemoteDescription(
         new RTCSessionDescription(pendingOfferRef.current)
       );
       
       // Create and send answer
+      console.log('Creating answer');
       const answer = await peerConnection.createAnswer();
+      console.log('Setting local description');
       await peerConnection.setLocalDescription(answer);
+      
+      console.log('Answer SDP:', answer.sdp?.substring(0, 200));
       
       console.log('Sending call answer');
       socket.emit('answer-call', {
@@ -353,6 +362,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     // Handle call answered (when remote peer accepts the call)
     const handleCallAnswered = async (data: { answer: RTCSessionDescriptionInit }) => {
       console.log('Received call answer from remote peer');
+      console.log('Answer SDP:', data.answer.sdp?.substring(0, 200));
       
       if (!peerConnectionRef.current) {
         console.log('No peer connection available');
@@ -360,12 +370,18 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
       
       try {
+        console.log('Current signalingState:', peerConnectionRef.current.signalingState);
+        console.log('Current iceConnectionState:', peerConnectionRef.current.iceConnectionState);
         console.log('Setting remote description from answer');
+        
         await peerConnectionRef.current.setRemoteDescription(
           new RTCSessionDescription(data.answer)
         );
         
         console.log('Remote description set successfully');
+        console.log('New signalingState:', peerConnectionRef.current.signalingState);
+        console.log('Peer connection has', peerConnectionRef.current.getReceivers().length, 'receivers');
+        
         setCallStatus('connected');
         
         // Apply any pending ICE candidates
