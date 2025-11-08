@@ -9,6 +9,11 @@ const VideoCall: React.FC = () => {
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOff, setIsVideoOff] = useState(false);
 
+    // Debug: Log callStatus changes
+    useEffect(() => {
+        console.log("📞 VideoCall callStatus changed to:", callStatus);
+    }, [callStatus]);
+
     const isWebRTCSupported = () => {
         return (
             navigator.mediaDevices && navigator.mediaDevices.getUserMedia &&
@@ -50,13 +55,30 @@ const VideoCall: React.FC = () => {
         // Always show the remote stream when available
         if (remoteStream && remoteVideoRef.current) {
             try {
-                console.log("stresm ",remoteStream);
+                console.log("🎥 Setting remote stream:", remoteStream);
+                console.log("🎥 Remote stream tracks:", remoteStream.getTracks());
+                console.log("🎥 Remote stream active:", remoteStream.active);
+                console.log("🎥 Video element ref:", remoteVideoRef.current);
+                
                 remoteVideoRef.current.srcObject = remoteStream;
+                
+                // Force the video to play
+                remoteVideoRef.current.play().then(() => {
+                    console.log("✅ Remote video playing successfully");
+                }).catch(err => {
+                    console.error("❌ Error playing remote video:", err);
+                });
             } catch (err) {
                 console.error('Error binding remote stream:', err);
             }
+        } else {
+            console.log("⚠️ Remote stream or ref not available:", {
+                hasRemoteStream: !!remoteStream,
+                hasRemoteVideoRef: !!remoteVideoRef.current,
+                callStatus
+            });
         }
-    }, [remoteStream]);
+    }, [remoteStream, callStatus]);
 
     const toggleMute = () => {
         if (localStream) {
@@ -117,6 +139,14 @@ const VideoCall: React.FC = () => {
                         playsInline
                         className="absolute inset-0 w-full h-full object-cover bg-black"
                     />
+                    {/* Debug indicator */}
+                    {!remoteStream && callStatus === 'connected' && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <p className="text-white bg-red-500 px-4 py-2 rounded">
+                                Waiting for remote video...
+                            </p>
+                        </div>
+                    )}
                     {/* Local Video (small box) */}
                     <div className="absolute bottom-6 right-6 w-1/4 max-w-[200px] aspect-video bg-gray-800 rounded-lg overflow-hidden border-2 border-white shadow-lg">
                         <video
