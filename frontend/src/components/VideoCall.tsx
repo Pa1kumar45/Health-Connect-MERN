@@ -54,22 +54,27 @@ const VideoCall: React.FC = () => {
     useEffect(() => {
         // Always show the remote stream when available
         if (remoteStream && remoteVideoRef.current) {
-            try {
-                console.log("🎥 Setting remote stream:", remoteStream);
-                console.log("🎥 Remote stream tracks:", remoteStream.getTracks());
-                console.log("🎥 Remote stream active:", remoteStream.active);
-                console.log("🎥 Video element ref:", remoteVideoRef.current);
-                
-                remoteVideoRef.current.srcObject = remoteStream;
-                
-                // Force the video to play
-                remoteVideoRef.current.play().then(() => {
-                    console.log("✅ Remote video playing successfully");
-                }).catch(err => {
-                    console.error("❌ Error playing remote video:", err);
-                });
-            } catch (err) {
-                console.error('Error binding remote stream:', err);
+            // Only set srcObject if it's different to avoid interrupting playback
+            if (remoteVideoRef.current.srcObject !== remoteStream) {
+                try {
+                    console.log("🎥 Setting remote stream:", remoteStream);
+                    console.log("🎥 Remote stream tracks:", remoteStream.getTracks());
+                    console.log("🎥 Remote stream active:", remoteStream.active);
+                    console.log("🎥 Video element ref:", remoteVideoRef.current);
+                    
+                    remoteVideoRef.current.srcObject = remoteStream;
+                    
+                    // Force the video to play
+                    remoteVideoRef.current.play().then(() => {
+                        console.log("✅ Remote video playing successfully");
+                    }).catch(err => {
+                        console.error("❌ Error playing remote video:", err);
+                    });
+                } catch (err) {
+                    console.error('Error binding remote stream:', err);
+                }
+            } else {
+                console.log("🎥 Remote stream already set, skipping");
             }
         } else {
             console.log("⚠️ Remote stream or ref not available:", {

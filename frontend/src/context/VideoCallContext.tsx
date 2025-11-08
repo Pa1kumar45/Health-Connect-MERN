@@ -422,7 +422,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       socket.off('call-end', handleCallEnd);
       socket.off('call-rejected', handleCallRejected);
     };
-  }, [socket, isInCall]);
+  }, [socket]); // Removed isInCall dependency to prevent re-registration of handlers
 
   return (
     <VideoCallContext.Provider value={{
