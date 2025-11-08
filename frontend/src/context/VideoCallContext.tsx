@@ -320,7 +320,8 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const handleCallOffer = (data) => {
       console.log('Received call offer from:', data.from);
       
-      if (isInCall) {
+      // Check if already in call using ref instead of state
+      if (peerConnectionRef.current) {
         console.log('Already in call, rejecting new call');
         socket.emit('call-rejected', { to: data.from });
         return;
@@ -361,39 +362,37 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     
     // Handle call answered (when remote peer accepts the call)
     const handleCallAnswered = async (data: { answer: RTCSessionDescriptionInit }) => {
-      console.log('Received call answer from remote peer');
-      console.log('Answer SDP:', data.answer.sdp?.substring(0, 200));
+      console.log('🔔 Received call answer from remote peer');
+      console.log('📝 Answer SDP:', data.answer.sdp?.substring(0, 200));
+      console.log('🔍 Current peerConnectionRef.current:', peerConnectionRef.current);
       
-      // Wait a bit for peer connection to be set up if needed
-      let retries = 0;
-      while (!peerConnectionRef.current && retries < 10) {
-        console.log('Waiting for peer connection... retry', retries);
-        await new Promise(resolve => setTimeout(resolve, 100));
-        retries++;
-      }
+      // Access the ref directly - no waiting needed
+      const peerConnection = peerConnectionRef.current;
       
-      if (!peerConnectionRef.current) {
-        console.error('No peer connection available after waiting');
+      if (!peerConnection) {
+        console.error('❌ No peer connection available - this should not happen after startCall()');
+        console.error('❌ This means the peer connection was not created or was cleared');
         return;
       }
       
       try {
-        console.log('Current signalingState:', peerConnectionRef.current.signalingState);
-        console.log('Current iceConnectionState:', peerConnectionRef.current.iceConnectionState);
-        console.log('Setting remote description from answer');
+        console.log('✅ Peer connection exists, proceeding...');
+        console.log('📊 Current signalingState:', peerConnection.signalingState);
+        console.log('📊 Current iceConnectionState:', peerConnection.iceConnectionState);
+        console.log('⚙️ Setting remote description from answer');
         
-        await peerConnectionRef.current.setRemoteDescription(
+        await peerConnection.setRemoteDescription(
           new RTCSessionDescription(data.answer)
         );
         
-        console.log('Remote description set successfully');
-        console.log('New signalingState:', peerConnectionRef.current.signalingState);
-        console.log('Peer connection has', peerConnectionRef.current.getReceivers().length, 'receivers');
+        console.log('✅ Remote description set successfully');
+        console.log('📊 New signalingState:', peerConnection.signalingState);
+        console.log('📊 Peer connection has', peerConnection.getReceivers().length, 'receivers');
         
         setCallStatus('connected');
         
         // Apply any pending ICE candidates
-        console.log('Applying pending ICE candidates:', pendingCandidatesRef.current.length);
+        console.log('⚙️ Applying pending ICE candidates:', pendingCandidatesRef.current.length);
         pendingCandidatesRef.current.forEach(candidate => {
           if (peerConnectionRef.current) {
             peerConnectionRef.current.addIceCandidate(candidate);
@@ -402,12 +401,15 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         pendingCandidatesRef.current = [];
         
       } catch (error) {
-        console.error('Error handling call answer:', error);
+        console.error('❌ Error handling call answer:', error);
         cleanupCall();
       }
     };
     
     // Register event listeners
+    console.log('🔧 Registering socket event listeners (useEffect running)');
+    console.log('🔧 peerConnectionRef.current at registration time:', peerConnectionRef.current);
+    
     socket.on('call-made', handleCallOffer);
     socket.on('call-answered', handleCallAnswered);
     socket.on('ice-candidate', handleIceCandidate);
@@ -416,6 +418,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     
     // Cleanup event listeners
     return () => {
+      console.log('🧹 Cleaning up socket event listeners (useEffect cleanup)');
       socket.off('call-made', handleCallOffer);
       socket.off('call-answered', handleCallAnswered);
       socket.off('ice-candidate', handleIceCandidate);
