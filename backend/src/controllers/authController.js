@@ -81,10 +81,11 @@ export const register = async (req, res) => {
 
     // Generate JWT token
    
-    generateToken(user._id, role, res);
+    const token = generateToken(user._id, role, res);
     res.status(201).json({
       success: true,
       message: 'Registration successful',
+      token, // Include token in response for localStorage
       data: {...user.toObject(),role}
       
     });
@@ -128,13 +129,14 @@ export const login = async (req, res) => {
     }
 
     // Generate JWT token
-    generateToken(user._id, role,res);
+    const token = generateToken(user._id, role,res);
     
 
 
     res.json({
       success: true,
       message: 'Login successful',
+      token, // Include token in response for localStorage
       data: {...user.toObject(),role}
       
     });

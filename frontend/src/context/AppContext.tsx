@@ -53,6 +53,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const response = await axiosInstance.post('/auth/register', data);
             console.log("Signup response:", response.data);
 
+            // Save token to localStorage
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+                console.log("Token saved to localStorage");
+            }
+
             setCurrentUser(response.data.data);
             const id = response.data.data._id;
             connectSocket(id);
@@ -66,6 +72,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             console.log("logindata", data);
             const response = await axiosInstance.post('/auth/login', data);
             console.log("login responce", response);
+            
+            // Save token to localStorage
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+                console.log("Token saved to localStorage");
+            }
+            
             setCurrentUser(response.data.data);
 
             const id = response.data.data._id;
@@ -79,6 +92,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const logout = async () => {
         setCurrentUser(null);
+        localStorage.removeItem('token'); // Clear token from localStorage
         await axiosInstance.post('/auth/logout');
     }
 

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health-Connect Debug Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status.ok {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .info {
+            padding: 15px;
+            background: #d1ecf1;
+            border-radius: 8px;
+            color: #0c5460;
+            margin-bottom: 20px;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🩺 Health-Connect Debug Tool</h1>
+        <p class="subtitle">Use this tool to diagnose and fix authentication issues</p>
+        
+        <div class="info">
+            <strong>⚠️ Instructions:</strong> Run these checks in order. If you see errors, use the "Clear All Storage" button and try logging in again.
+        </div>
+        
+        <!-- Token Check Section -->
+        <div class="section">
+            <h2>1. Check Authentication Token</h2>
+            <div class="button-group">
+                <button onclick="checkToken()">Check Token</button>
+                <button class="danger" onclick="clearToken()">Clear Token</button>
+            </div>
+            <div id="tokenResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <!-- Backend Status Section -->
+        <div class="section">
+            <h2>2. Check Backend Server</h2>
+            <div class="button-group">
+                <button onclick="checkBackend()">Test Backend Connection</button>
+                <button onclick="wakeBackend()">Wake Up Server</button>
+            </div>
+            <div id="backendResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <!-- API Test Section -->
+        <div class="section">
+            <h2>3. Test Authenticated Request</h2>
+            <div class="button-group">
+                <button onclick="testAuthRequest()">Test Auth Endpoint</button>
+            </div>
+            <div id="apiResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <!-- Storage Management Section -->
+        <div class="section">
+            <h2>4. Storage Management</h2>
+            <div class="button-group">
+                <button class="danger" onclick="clearAllStorage()">Clear All Storage</button>
+                <button onclick="viewStorage()">View Storage Contents</button>
+            </div>
+            <div id="storageResult" class="result" style="display:none;"></div>
+        </div>
+        
+        <!-- Quick Actions Section -->
+        <div class="section">
+            <h2>5. Quick Actions</h2>
+            <div class="button-group">
+                <button class="success" onclick="runFullDiagnostic()">Run Full Diagnostic</button>
+                <button onclick="copyDiagnostic()">Copy Results</button>
+            </div>
+            <div id="diagnosticResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://health-connect-mern-1.onrender.com';
+        
+        function showResult(elementId, content, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.innerHTML = content;
+            element.style.color = isError ? '#dc3545' : '#28a745';
+        }
+        
+        function checkToken() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    // Decode JWT payload
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const expiry = new Date(payload.exp * 1000);
+                    const now = new Date();
+                    const isExpired = now > expiry;
+                    
+                    showResult('tokenResult', 
+                        `✅ Token Found!\n\n` +
+                        `User ID: ${payload.id}\n` +
+                        `Role: ${payload.role}\n` +
+                        `Expires: ${expiry.toLocaleString()}\n` +
+                        `Status: ${isExpired ? '❌ EXPIRED' : '✅ Valid'}\n\n` +
+                        `Token Preview: ${token.substring(0, 50)}...`,
+                        isExpired
+                    );
+                } catch (e) {
+                    showResult('tokenResult', `⚠️ Token exists but is malformed!\n\nToken: ${token.substring(0, 100)}...`, true);
+                }
+            } else {
+                showResult('tokenResult', '❌ No token found in localStorage!\n\nYou need to login first.', true);
+            }
+        }
+        
+        function clearToken() {
+            localStorage.removeItem('token');
+            showResult('tokenResult', '✅ Token cleared successfully!\n\nYou can now login fresh.');
+        }
+        
+        async function checkBackend() {
+            showResult('backendResult', '⏳ Checking backend server...');
+            try {
+                const start = Date.now();
+                const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || 'none'}`
+                    }
+                });
+                const elapsed = Date.now() - start;
+                
+                showResult('backendResult', 
+                    `Server Status: ${response.status} ${response.statusText}\n` +
+                    `Response Time: ${elapsed}ms\n\n` +
+                    (response.status === 401 
+                        ? '✅ Server is online but token is invalid/missing (expected if not logged in)'
+                        : response.status === 200
+                            ? '✅ Server is online and authenticated!'
+                            : `⚠️ Unexpected status: ${response.status}`)
+                );
+            } catch (error) {
+                showResult('backendResult', 
+                    `❌ Backend Error!\n\n` +
+                    `Error: ${error.message}\n\n` +
+                    `Possible causes:\n` +
+                    `1. Server is sleeping (Render free tier)\n` +
+                    `2. No internet connection\n` +
+                    `3. CORS error\n\n` +
+                    `Try "Wake Up Server" button.`,
+                    true
+                );
+            }
+        }
+        
+        async function wakeBackend() {
+            showResult('backendResult', '⏳ Waking up backend server (may take 30-60 seconds)...');
+            try {
+                const start = Date.now();
+                const response = await fetch(`${BACKEND_URL}/api/auth/me`);
+                const elapsed = Date.now() - start;
+                
+                showResult('backendResult', 
+                    `✅ Server woke up!\n\n` +
+                    `Response Time: ${elapsed}ms\n` +
+                    `Status: ${response.status}\n\n` +
+                    `You can now use the app.`
+                );
+            } catch (error) {
+                showResult('backendResult', `❌ Failed to wake server: ${error.message}`, true);
+            }
+        }
+        
+        async function testAuthRequest() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showResult('apiResult', '❌ No token found! Please login first.', true);
+                return;
+            }
+            
+            showResult('apiResult', '⏳ Testing authenticated request...');
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('apiResult', 
+                        `✅ Authentication Successful!\n\n` +
+                        `User: ${data.name || 'N/A'}\n` +
+                        `Email: ${data.email || 'N/A'}\n` +
+                        `Role: ${data.role || 'N/A'}\n\n` +
+                        `Full Response:\n${JSON.stringify(data, null, 2)}`
+                    );
+                } else {
+                    showResult('apiResult', 
+                        `❌ Authentication Failed!\n\n` +
+                        `Status: ${response.status}\n` +
+                        `Message: ${data.message || 'Unknown error'}\n\n` +
+                        `Full Response:\n${JSON.stringify(data, null, 2)}\n\n` +
+                        `Action: Clear storage and login again.`,
+                        true
+                    );
+                }
+            } catch (error) {
+                showResult('apiResult', `❌ Request failed: ${error.message}`, true);
+            }
+        }
+        
+        function clearAllStorage() {
+            if (confirm('This will clear ALL localStorage data. Continue?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                showResult('storageResult', 
+                    `✅ All storage cleared!\n\n` +
+                    `Cleared:\n` +
+                    `- localStorage\n` +
+                    `- sessionStorage\n\n` +
+                    `Now reload the page and login fresh.`
+                );
+            }
+        }
+        
+        function viewStorage() {
+            const storage = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                storage[key] = localStorage.getItem(key);
+            }
+            
+            showResult('storageResult', 
+                `📦 localStorage Contents:\n\n` +
+                (Object.keys(storage).length === 0 
+                    ? '(empty)' 
+                    : JSON.stringify(storage, null, 2))
+            );
+        }
+        
+        async function runFullDiagnostic() {
+            let report = '🔍 FULL DIAGNOSTIC REPORT\n';
+            report += '='.repeat(50) + '\n\n';
+            report += `Date: ${new Date().toLocaleString()}\n`;
+            report += `URL: ${window.location.href}\n\n`;
+            
+            // Check token
+            report += '1. TOKEN CHECK\n' + '-'.repeat(50) + '\n';
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const expiry = new Date(payload.exp * 1000);
+                    const isExpired = new Date() > expiry;
+                    report += `Status: ${isExpired ? '❌ EXPIRED' : '✅ Valid'}\n`;
+                    report += `User ID: ${payload.id}\n`;
+                    report += `Role: ${payload.role}\n`;
+                    report += `Expires: ${expiry.toLocaleString()}\n`;
+                } catch {
+                    report += `Status: ⚠️ Malformed\n`;
+                }
+            } else {
+                report += `Status: ❌ Missing\n`;
+            }
+            report += '\n';
+            
+            // Check backend
+            report += '2. BACKEND CHECK\n' + '-'.repeat(50) + '\n';
+            showResult('diagnosticResult', report + 'Testing backend...');
+            try {
+                const start = Date.now();
+                const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token || ''}` }
+                });
+                const elapsed = Date.now() - start;
+                report += `Status: ${response.status} ${response.statusText}\n`;
+                report += `Response Time: ${elapsed}ms\n`;
+                report += `Result: ${response.ok ? '✅ OK' : '❌ Error'}\n`;
+            } catch (error) {
+                report += `Status: ❌ Failed\n`;
+                report += `Error: ${error.message}\n`;
+            }
+            report += '\n';
+            
+            // Storage info
+            report += '3. STORAGE INFO\n' + '-'.repeat(50) + '\n';
+            report += `localStorage items: ${localStorage.length}\n`;
+            report += `sessionStorage items: ${sessionStorage.length}\n`;
+            report += '\n';
+            
+            // Browser info
+            report += '4. BROWSER INFO\n' + '-'.repeat(50) + '\n';
+            report += `User Agent: ${navigator.userAgent}\n`;
+            report += `Cookies Enabled: ${navigator.cookieEnabled}\n`;
+            report += '\n';
+            
+            report += '='.repeat(50) + '\n';
+            report += 'END OF REPORT';
+            
+            showResult('diagnosticResult', report);
+        }
+        
+        function copyDiagnostic() {
+            const diagnosticText = document.getElementById('diagnosticResult').innerText;
+            navigator.clipboard.writeText(diagnosticText).then(() => {
+                alert('✅ Diagnostic report copied to clipboard!');
+            });
+        }
+        
+        // Run basic checks on load
+        window.onload = () => {
+            console.log('🩺 Health-Connect Debug Tool loaded');
+            console.log('Backend URL:', BACKEND_URL);
+        };
+    </script>
+</body>
+</html>

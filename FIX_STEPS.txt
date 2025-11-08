@@ -1,0 +1,228 @@
+╔════════════════════════════════════════════════════════════════════╗
+║                   🩺 HEALTH-CONNECT FIX GUIDE                      ║
+║                     Follow These Steps Exactly                     ║
+╚════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────┐
+│ STEP 1: Open Your Vercel App (Where You're Logged In)             │
+└────────────────────────────────────────────────────────────────────┘
+
+1. Open Chrome browser
+2. Go to: https://health-connect-mern.vercel.app
+3. Make sure you're on the page where you see "Failed to fetch appointments"
+
+┌────────────────────────────────────────────────────────────────────┐
+│ STEP 2: Open Browser Console                                       │
+└────────────────────────────────────────────────────────────────────┘
+
+Press: F12 (or Right-click → Inspect → Console tab)
+
+You should see the Console tab at the bottom/right of your screen.
+
+┌────────────────────────────────────────────────────────────────────┐
+│ STEP 3: Check If Token Exists                                      │
+└────────────────────────────────────────────────────────────────────┘
+
+Copy and paste this command in the Console and press Enter:
+
+localStorage.getItem('token')
+
+Expected Output:
+✅ If you see a long string starting with "eyJ..." - Token exists!
+❌ If you see "null" - No token, need to login
+
+┌────────────────────────────────────────────────────────────────────┐
+│ STEP 4: Test If Token Works with Backend                           │
+└────────────────────────────────────────────────────────────────────┘
+
+Copy and paste this ENTIRE block in Console and press Enter:
+
+fetch('https://health-connect-mern-1.onrender.com/api/auth/me', {
+    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+})
+.then(r => r.json())
+.then(data => {
+    console.log('✅ Backend Response:', data);
+    if (data.success === false) {
+        console.log('❌ Token Invalid! Run STEP 5 to fix.');
+    } else {
+        console.log('✅ Token Valid! Issue is elsewhere.');
+    }
+})
+.catch(e => console.log('❌ Error:', e.message));
+
+Look at the output:
+✅ If you see user data (email, name, role) - Token works!
+❌ If you see "Authentication required" or 401 - Token invalid!
+
+┌────────────────────────────────────────────────────────────────────┐
+│ STEP 5: CLEAR STORAGE AND LOGIN FRESH (If Step 4 failed)          │
+└────────────────────────────────────────────────────────────────────┘
+
+Copy and paste this in Console and press Enter:
+
+localStorage.clear(); sessionStorage.clear(); alert('Storage cleared! Click OK to refresh.'); location.reload();
+
+This will:
+1. Clear all stored data
+2. Show an alert
+3. Reload the page
+
+After reload:
+- Click "Login" button
+- Enter your credentials (doctor d1)
+- Login
+- Go to Appointments page
+- Should work now! ✅
+
+┌────────────────────────────────────────────────────────────────────┐
+│ STEP 6: Verify Fix (After logging in fresh)                        │
+└────────────────────────────────────────────────────────────────────┘
+
+After you login again, open Console (F12) and run:
+
+fetch('https://health-connect-mern-1.onrender.com/api/appointments/doctor/', {
+    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+})
+.then(r => r.json())
+.then(data => console.log('✅ Appointments:', data))
+.catch(e => console.log('❌ Error:', e));
+
+Expected Output:
+✅ Should see appointments array (even if empty: [])
+❌ If still 401, see TROUBLESHOOTING below
+
+┌────────────────────────────────────────────────────────────────────┐
+│ TROUBLESHOOTING: If Still Getting 401 Errors                       │
+└────────────────────────────────────────────────────────────────────┘
+
+Run this FULL diagnostic in Console (F12):
+
+(async function() {
+    console.clear();
+    console.log('🔍 DIAGNOSTIC STARTING...\n');
+    
+    // 1. Check token
+    const token = localStorage.getItem('token');
+    console.log('1. Token exists:', !!token);
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            console.log('   User ID:', payload.id);
+            console.log('   Role:', payload.role);
+            console.log('   Expires:', new Date(payload.exp * 1000).toLocaleString());
+            console.log('   Expired:', new Date() > new Date(payload.exp * 1000) ? '❌ YES' : '✅ NO');
+        } catch (e) {
+            console.log('   ❌ Token malformed!');
+        }
+    }
+    console.log('');
+    
+    // 2. Test backend auth
+    console.log('2. Testing backend authentication...');
+    try {
+        const r = await fetch('https://health-connect-mern-1.onrender.com/api/auth/me', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await r.json();
+        console.log('   Status:', r.status);
+        console.log('   Response:', data);
+        console.log('   Result:', r.ok ? '✅ SUCCESS' : '❌ FAILED');
+    } catch (e) {
+        console.log('   ❌ Backend error:', e.message);
+    }
+    console.log('');
+    
+    // 3. Test appointments endpoint
+    console.log('3. Testing appointments endpoint...');
+    try {
+        const r = await fetch('https://health-connect-mern-1.onrender.com/api/appointments/doctor/', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await r.json();
+        console.log('   Status:', r.status);
+        console.log('   Response:', data);
+        console.log('   Result:', r.ok ? '✅ SUCCESS' : '❌ FAILED');
+    } catch (e) {
+        console.log('   ❌ Error:', e.message);
+    }
+    console.log('');
+    
+    // 4. Recommendation
+    console.log('4. RECOMMENDATION:');
+    if (!token) {
+        console.log('   ❌ No token found. Please login.');
+    } else {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const expired = new Date() > new Date(payload.exp * 1000);
+            if (expired) {
+                console.log('   ❌ Token expired. Run: localStorage.clear(); location.reload();');
+            } else {
+                console.log('   ⚠️  Token valid but requests failing.');
+                console.log('   Try: localStorage.clear(); location.reload(); then login again');
+            }
+        } catch (e) {
+            console.log('   ❌ Token malformed. Run: localStorage.clear(); location.reload();');
+        }
+    }
+    
+    console.log('\n✅ DIAGNOSTIC COMPLETE');
+})();
+
+This will show you EXACTLY what's wrong.
+
+┌────────────────────────────────────────────────────────────────────┐
+│ QUICK FIX CHECKLIST                                                 │
+└────────────────────────────────────────────────────────────────────┘
+
+□ Step 1: Open https://health-connect-mern.vercel.app
+□ Step 2: Press F12 (open Console)
+□ Step 3: Run: localStorage.clear(); location.reload();
+□ Step 4: Login again with your credentials
+□ Step 5: Go to Appointments page
+□ Step 6: Check if it works ✅
+
+If still failing, run the full diagnostic above and share the output.
+
+┌────────────────────────────────────────────────────────────────────┐
+│ ADDITIONAL INFO                                                     │
+└────────────────────────────────────────────────────────────────────┘
+
+Backend URL: https://health-connect-mern-1.onrender.com
+Frontend URL: https://health-connect-mern.vercel.app
+
+The backend was updated 30 minutes ago with better error handling.
+Old tokens from before the update may not work with the new code.
+Solution: Clear storage and login fresh to get a new token.
+
+┌────────────────────────────────────────────────────────────────────┐
+│ NETWORK TAB VERIFICATION (Optional)                                │
+└────────────────────────────────────────────────────────────────────┘
+
+While on Appointments page:
+1. Press F12
+2. Click "Network" tab
+3. Refresh page (Ctrl+R)
+4. Click the failed request (red, status 401)
+5. Click "Headers" tab
+6. Check "Request Headers" section
+7. Look for: Authorization: Bearer eyJ...
+
+If "Authorization" header is missing:
+- Token not being sent by axios interceptor
+- Clear cache with Ctrl+Shift+R
+
+If "Authorization" header is present but still 401:
+- Token is invalid
+- Clear storage and login fresh
+
+╔════════════════════════════════════════════════════════════════════╗
+║                     🎯 EXPECTED RESULT                             ║
+║                                                                    ║
+║  After clearing storage and logging in fresh:                     ║
+║  ✅ Appointments page loads without errors                         ║
+║  ✅ No 401 errors in console                                       ║
+║  ✅ Appointments list shows (even if empty)                        ║
+║  ✅ All features work normally                                     ║
+╚════════════════════════════════════════════════════════════════════╝
