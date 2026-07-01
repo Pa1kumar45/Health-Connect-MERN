@@ -1,0 +1,61 @@
+                    ┌──────────────────┐
+                    │  Nginx (Load     │
+10,000 Users ──────→│  Balancer)       │
+                    └────────┬─────────┘
+                             │
+            ┌────────────────┼────────────────┐
+            │                │                │
+     ┌──────▼──────┐  ┌─────▼──────┐  ┌─────▼──────┐
+     │  Server 1   │  │  Server 2  │  │  Server 3  │
+     │  (Express)  │  │  (Express) │  │  (Express) │
+     │  Socket.IO  │  │  Socket.IO │  │  Socket.IO │
+     └──────┬──────┘  └─────┬──────┘  └─────┬──────┘
+            │               │               │
+            └───────────────┼───────────────┘
+                            │
+                    ┌───────▼────────┐
+                    │  Redis Pub/Sub │ (Message sync)
+                    └───────┬────────┘
+                            │
+                    ┌───────▼────────┐
+                    │  MongoDB Atlas │ (Data layer)
+                    │  (Sharded)     │
+                    └────────────────┘
+
+🎯 Interview Answers:
+Q: "How would you scale to 10,000 users?"
+Answer:
+
+"I'd implement three key strategies. First, database indexing—we already have compound indexes 
+on (doctorId, date) which reduced appointment queries by 95%, from 200ms to under 10ms. Second, 
+load balancing with Nginx—deploy 3 backend instances behind Nginx using round-robin distribution.
+Each server handles 3,333 users instead of 10,000, reducing CPU from 100% to 33%.
+Third, WebSocket clustering with Redis—use Socket.IO's Redis adapter so messages sync across
+all servers. Without it, User A on Server 1 couldn't message User B on Server 2. Redis acts
+as a pub/sub hub, enabling real-time chat across distributed instances. We'd also use sticky 
+sessions (IP hash) to keep WebSocket connections stable."
+
+
+
+Q: "Explain compound indexing."
+Answer:
+
+"Compound indexes are multi-field indexes that optimize queries with multiple conditions. 
+For example, our dashboard queries appointments by both doctorId AND date. Without an index, 
+MongoDB scans all 50,000 documents linearly—taking 200ms. With appointmentSchema.index({ doctorId: 1, date: 1 }), 
+MongoDB creates a sorted B-tree structure that allows binary search, jumping directly to matching documents in under 
+10ms. That's a 95% performance improvement. The order matters—we index doctorId first because we always filter by
+doctor, then date narrows it down further."
+
+
+
+Q: "What's the Redis adapter doing?"
+Answer:
+
+"The Redis adapter enables Socket.IO to work across multiple servers. By default, socket.emit() 
+only sends to clients connected to the same Node.js instance. In a load-balanced setup with 3
+ servers, users on different servers can't communicate. The Redis adapter solves this by publishing
+  all emissions to a central Redis pub/sub channel. When Server 1 emits a message, Redis broadcasts it to 
+  Servers 2 and 3, which then emit to their connected clients. This creates a unified Socket.IO namespace 
+  across all instances, enabling seamless real-time chat regardless of which server users connect to."
+

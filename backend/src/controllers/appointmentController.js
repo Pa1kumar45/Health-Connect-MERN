@@ -171,7 +171,7 @@ export const getDoctorAppointments = async (req, res) => {
       }
       const appointments = await Appointment.find({ patientId: userId })
         .populate('doctorId', 'name specialization')
-        .sort({ date: 1,startTime:1 });
+        .sort({ date: -1,startTime:-1 });
       // console.log("got patient appointments",appointments);
       res.json(appointments); 
     }

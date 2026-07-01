@@ -53,7 +53,7 @@ export const fetchMessages =async(req,res)=>{
         const messages= await Message.find({$or:[
             {senderId:senderId,receiverId:receiverId},
             {receiverId:senderId,senderId:receiverId}
-        ]}).sort({ createdAt: 1 }); // Sort by creation time ascending
+        ]}).sort({ createdAt: -1 }); // Sort by creation time ascending
         
 
         res.status(200).json({success:true,messages});
