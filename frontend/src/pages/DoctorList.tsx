@@ -6,6 +6,9 @@ import { Doctor } from '../types/index.ts';
 import { useApp } from '../context/AppContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
+// Ai recommender service import
+import { aiService } from '../services/ai.service.ts';
+
 const DoctorList = () => {
   const { isDarkMode } = useApp();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -15,6 +18,34 @@ const DoctorList = () => {
   const [selectedSpecialization, setSelectedSpecialization] = useState('');
   // const [minRating, setMinRating] = useState(0);
   const [minExperience, setMinExperience] = useState(0);
+
+
+// new gemini Api recommends symptoms to Required Doc specialization
+  const [symptoms, setSymptoms] = useState("");
+  const [recommendedSpecializations, setRecommendedSpecializations] = useState<string[]>([]);
+  const [loadingAI, setLoadingAI] = useState(false);
+
+const handleRecommend = async () => {
+  if (!symptoms.trim()) {
+    alert("Please describe your symptoms.");
+    return;
+  }
+
+  setLoadingAI(true);
+
+  try {
+    const data = await aiService.recommendSpecialization(symptoms);
+
+    setRecommendedSpecializations(data.recommendations);
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to get AI recommendation.");
+  } finally {
+    setLoadingAI(false);
+  }
+};
+
 
   useEffect(() => {
     loadDoctors();
@@ -86,9 +117,64 @@ const DoctorList = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6`}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold mb-4 md:mb-0 dark:text-white">Find Your Doctor</h1>
-          
+        <h1 className="text-2xl font-bold mb-6 dark:text-white">
+    Find Your Doctor
+</h1>
+
+ <div className="mb-8">
+
+  <h3 className="text-lg font-semibold mb-2 dark:text-white">
+      🤖 AI Doctor Recommendation
+  </h3>
+
+  <textarea
+      placeholder="Describe your symptoms..."
+      value={symptoms}
+      onChange={(e)=>setSymptoms(e.target.value)}
+      rows={4}
+      className={`w-full p-3 rounded-lg border ${
+        isDarkMode
+          ? "bg-gray-700 border-gray-600 text-white"
+          : "bg-white border-gray-300"
+      }`}
+  />
+
+  <button
+      onClick={handleRecommend}
+      disabled={loadingAI}
+      className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg"
+  >
+      {loadingAI ? "Finding..." : "Recommend Specialization"}
+  </button>
+
+  {recommendedSpecializations.length > 0 && (
+      <div className="mt-4">
+
+          <h4 className="font-semibold mb-2 dark:text-white">
+              Recommended Specializations
+          </h4>
+
+          <div className="flex flex-wrap gap-2">
+
+              {recommendedSpecializations.map(spec => (
+
+                  <button
+                      key={spec}
+                      onClick={() => setSelectedSpecialization(spec)}
+                      className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700"
+                  >
+                      {spec}
+                  </button>
+
+              ))}
+
+          </div>
+
+      </div>
+  )}
+
+</div>
+
           <div className="relative flex-1 md:max-w-md md:ml-4">
             <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
               isDarkMode ? 'text-gray-400' : 'text-gray-500'
@@ -104,8 +190,7 @@ const DoctorList = () => {
                   : 'bg-white border-gray-300'
               }`}
             />
-          </div>
-        </div>
+/        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div>

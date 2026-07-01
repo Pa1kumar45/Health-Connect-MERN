@@ -12,6 +12,9 @@ import appointmentRoutes from './routes/appointments.js';
 import messageRoutes from './routes/message.js'
 import { app, server } from './lib/socket.js';
 
+// new gemini symptom to doctor recommender :
+import aiRoutes from './routes/ai.js';
+
 // Load environment variables
 dotenv.config();
 
@@ -69,6 +72,8 @@ app.use('/api/patients', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/message',messageRoutes);
 
+// New Gemini symptom to doctor recommender Route
+app.use('/api/ai',aiRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
